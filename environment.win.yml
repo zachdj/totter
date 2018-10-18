@@ -2,4 +2,8 @@ name: totter
 channels:
   - defaults
 dependencies:
+  - pip=18
   - python=3.6
+  - pip:
+    - pythonnet
+    - pywebview==2.1
