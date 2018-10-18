@@ -1,0 +1,10 @@
+name: totter
+channels:
+  - defaults
+dependencies:
+  - pip=18
+  - python=3.6
+  - pip:
+    - pyqt5==5.11.3
+    - pyqt5-sip==4.19.13
+    - pywebview==2.1
