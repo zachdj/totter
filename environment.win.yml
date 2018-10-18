@@ -2,7 +2,7 @@ name: totter
 channels:
   - defaults
 dependencies:
-  - pip=18
+  - pip
   - python=3.6
   - pip:
     - pythonnet
