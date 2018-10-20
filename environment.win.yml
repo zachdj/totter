@@ -7,3 +7,4 @@ dependencies:
   - pip:
     - pythonnet
     - pywebview==2.1
+    - pyautogui
