@@ -1,5 +1,7 @@
 from abc import abstractmethod
 import multiprocessing
+import time
+import pyautogui
 
 
 class QwopStrategy:
@@ -25,11 +27,15 @@ class QwopStrategy:
         execution_process = multiprocessing.Process(target=self._run_execute)
         execution_process.start()
 
-        # check for the stopping condition every 250 ms
+        # check for the stopping condition every 100 ms
         while not self.stopped:
-            time.sleep(0.25)
+            time.sleep(0.1)
 
         execution_process.terminate()
+
+        # ensure all keys are up
+        for key in pyautogui.KEYBOARD_KEYS:
+            pyautogui.keyUp(key)
 
     @abstractmethod
     def execute(self):
