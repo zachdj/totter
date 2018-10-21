@@ -69,7 +69,7 @@ class QwopEvaluator(object):
         # check if a single strategy has been passed
         try:
             num_strategies = len(strategies)
-        except ValueError:  # raised if a single QwopStrategy was passed
+        except TypeError:  # raised if a single QwopStrategy was passed
             strategies = [strategies]
             num_strategies = len(strategies)
 
@@ -82,7 +82,7 @@ class QwopEvaluator(object):
             pyautogui.press('space')
 
             # reset the timer
-            self.timer.start()
+            self.timer.restart()
 
             # start a thread to execute the strategy
             strategy_execution_thread = threading.Thread(target=strategy.run)
