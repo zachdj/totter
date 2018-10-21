@@ -34,7 +34,7 @@ class QwopStrategy:
         execution_process.terminate()
 
         # ensure all keys are up
-        for key in pyautogui.KEYBOARD_KEYS:
+        for key in ('q', 'w', 'o', 'p', 'space'):
             pyautogui.keyUp(key)
 
     @abstractmethod
