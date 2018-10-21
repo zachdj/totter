@@ -104,4 +104,6 @@ class QwopEvaluator(object):
             # TODO: take a screen shot and determine score
             fitness_values[index] = 0  # TODO: replace 0 with score
 
+            self.evaluations += 1
+
         return tuple(fitness_values)
