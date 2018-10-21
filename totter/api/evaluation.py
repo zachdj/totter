@@ -3,6 +3,7 @@
 import time
 import threading
 import pyautogui
+import totter.api.qwop as qwop_api
 
 from totter.utils.time import WallTimer
 
@@ -22,7 +23,7 @@ class QwopEvaluator(object):
         Returns: None
 
         """
-        while not self._is_game_over() and self.timer.since() > time_limit:
+        while not (self._is_game_over() or self.timer.since().seconds > time_limit):
             time.sleep(delay)
 
     def _is_game_over(self):
@@ -35,11 +36,24 @@ class QwopEvaluator(object):
 
         """
         # take a screenshot
-        screen = pyautogui.screenshot()
+        screen = pyautogui.screenshot(region=qwop_api.QWOP_BOUNDING_BOX)
 
         # TODO: decide if game is over
 
         return False
+
+    def _end_game_manually(self):
+        """ Performs a series of bad keystrokes that probably ends the game """
+        pyautogui.keyDown('w')
+        pyautogui.keyDown('o')
+        time.sleep(1)
+        pyautogui.keyUp('w')
+        pyautogui.keyUp('o')
+        pyautogui.keyDown('q')
+        pyautogui.keyDown('p')
+        time.sleep(3)
+        pyautogui.keyUp('q')
+        pyautogui.keyUp('p')
 
     def evaluate(self, strategies, time_limit=120):
         """ Evaluates a QwopStrategy or a set of QwopStrategy objects
@@ -57,13 +71,7 @@ class QwopEvaluator(object):
             time.sleep(5)
 
         # click the qwop window to give it keyboard focus
-        # the qwop window should always be in the center of the primary monitor
-        screen_width, screen_height = pyautogui.size()
-        # correct for double-monitor setup
-        if screen_width > 1920:
-            screen_width = screen_width // 2
-        # move the mouse to the qwop window, and click to start the game
-        pyautogui.moveTo(screen_width // 2, screen_height // 2, duration=0.25)
+        pyautogui.moveTo(qwop_api.QWOP_CENTER[0], qwop_api.QWOP_CENTER[1], duration=0.1)
         pyautogui.click()
 
         # check if a single strategy has been passed
@@ -78,6 +86,9 @@ class QwopEvaluator(object):
 
         # evaluate the strategies
         for index, strategy in enumerate(strategies):
+            # if the last sequence of key strokes didn't end the game, end it manually
+            if self.evaluations > 0 and not self._is_game_over():
+                self._end_game_manually()
             # hit space to reset the game
             pyautogui.press('space')
 
