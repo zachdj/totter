@@ -1,9 +1,11 @@
 name: totter
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - pip
   - python=3.6
+  - selenium
   - pip:
     - pyqt5==5.11.3
     - pyqt5-sip==4.19.13

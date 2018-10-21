@@ -1,9 +1,11 @@
 name: totter
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - pip
   - python=3.6
+  - selenium
   - pip:
     - pythonnet
     - pywebview==2.1
