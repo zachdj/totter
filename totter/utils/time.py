@@ -12,7 +12,7 @@ class WallTimer:
     def __str__(self):
         return str(self.since())
 
-    def start(self):
+    def restart(self):
         self.start = now()
 
     def since(self):
