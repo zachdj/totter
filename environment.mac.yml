@@ -11,3 +11,4 @@ dependencies:
     - pyobjc-core
     - pyobjc
     - pyautogui
+    - pytesseract

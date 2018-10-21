@@ -14,13 +14,23 @@ It can be installed with `apt-get`:
 
 `sudo apt-get install scrot`
 
+Linux systems require the `tesseract-ocr` package to be installed.
+
+`sudo apt-get install tesseract-ocr`
+
 ### Windows
 
 `conda env create -f environment.win.yml`
 
-### Mac
+Install tesseract using one of the [UB Mannheim installers](https://github.com/UB-Mannheim/tesseract/wiki).
+
+
+### OS X
 
 `conda env create -f environment.osx.yml`
+
+OS X requires the `tesseract` package to be installed:
+`brew install tesseract`
 
 ## Running 
 

@@ -10,3 +10,4 @@ dependencies:
     - pywebview==2.1
     - python3-xlib
     - pyautogui
+    - pytesseract
