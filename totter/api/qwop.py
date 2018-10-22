@@ -1,5 +1,7 @@
-import webview
 import pyautogui
+import os
+import platform
+from selenium import webdriver
 
 # determine size of screen
 screen_width, screen_height = pyautogui.size()
@@ -10,7 +12,7 @@ if screen_width > 1920:
 # qwop-related constants
 _QWOP_URL = "http://foddy.net/Athletics.html?webgl=true"  # Note that it should be the HTML5 version
 _QWOP_WIDTH = 700
-_QWOP_HEIGHT = 450
+_QWOP_HEIGHT = 500
 QWOP_CENTER = (screen_width // 2, screen_height // 2)
 QWOP_BOUNDING_BOX = (
     QWOP_CENTER[0] - _QWOP_WIDTH // 2,  # left
@@ -19,13 +21,29 @@ QWOP_BOUNDING_BOX = (
     _QWOP_HEIGHT  # height
 )
 
+# create a selenium driver to open web pages
+
+# find the appropriate geckodriver for the current platform
+if platform.system() == 'Linux':
+    geckopath = os.path.join('totter', 'bin', 'nix', 'geckodriver')
+elif platform.system() == 'Darwin':
+    geckopath = os.path.join('totter', 'bin', 'osx', 'geckodriver')
+else:
+    geckopath = os.path.join('totter', 'bin', 'win', 'geckodriver.exe')
+
+geckopath = os.path.abspath(geckopath)
+
+browser = webdriver.Firefox(executable_path=geckopath)
+# move the browser window to a fixed and predictable location
+browser.set_window_position(x=QWOP_BOUNDING_BOX[0], y=QWOP_BOUNDING_BOX[1])
+browser.set_window_size(width=QWOP_BOUNDING_BOX[2], height=QWOP_BOUNDING_BOX[3])
+
 
 def open_qwop_window():
-    """ Opens a webview and loads the HTML5 version of QWOP """
-    webview.create_window(title="Totter QWOP Instance", url=_QWOP_URL,
-                          width=_QWOP_WIDTH, height=_QWOP_HEIGHT, resizable=False)
+    """ Opens a browser tab with the HTML5 version of QWOP """
+    browser.get(_QWOP_URL)
 
 
 def close_qwop_window():
     """ Kills the open webview """
-    webview.destroy_window()
+    browser.quit()
