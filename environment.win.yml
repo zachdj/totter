@@ -7,7 +7,5 @@ dependencies:
   - python=3.6
   - selenium
   - pip:
-    - pythonnet
-    - pywebview==2.1
     - pyautogui
     - pytesseract
