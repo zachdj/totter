@@ -35,8 +35,8 @@ geckopath = os.path.abspath(geckopath)
 
 browser = webdriver.Firefox(executable_path=geckopath)
 # move the browser window to a fixed and predictable location
-browser.set_window_position(x=QWOP_BOUNDING_BOX[0], y=QWOP_BOUNDING_BOX[1])
 browser.set_window_size(width=QWOP_BOUNDING_BOX[2], height=QWOP_BOUNDING_BOX[3])
+browser.set_window_position(x=QWOP_BOUNDING_BOX[0], y=QWOP_BOUNDING_BOX[1])
 
 
 def open_qwop_window():
