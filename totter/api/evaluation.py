@@ -1,46 +1,46 @@
 """ API to evaluate QwopStrategy objects by playing QWOP """
 
 import time
+from datetime import timedelta
 import threading
 import pyautogui
 import totter.api.qwop as qwop_api
+import totter.api.image_processing as image_processing
 
 from totter.utils.time import WallTimer
+
+
+def _check_game_over():
+    # TODO: this should probably also check if the game state hasn't changed for several seconds
+    screen = pyautogui.screenshot(region=qwop_api.QWOP_BOUNDING_BOX)
+    return image_processing.is_game_over(screen)
 
 
 class QwopEvaluator(object):
     def __init__(self):
         self.evaluations = 0
+        self.game_over = False  # tracks when the game ends for each evaluation
         self.timer = WallTimer()
+        # create an instance of QWOP
+        qwop_api.open_qwop_window()
+        time.sleep(7)  # make sure QWOP has loaded
 
-    def _loop_gameover_check(self, delay=0.25, time_limit=120):
-        """ loops self.is_game_over until the game is over or time_limit is reached
+    def _loop_gameover_check(self, interval=0.25, time_limit=120):
+        """ Checks if the game has ended every `interval` seconds until the specified time limit is reached
+
+        Sets `self.game_over` when the game-over condition is detected.
 
         Args:
-            delay (float): delay in seconds between is_game_over checks
-            time_limit (float): time limit in seconds
+            interval (float): time in between game over checks, in seconds
 
         Returns: None
 
         """
-        while not (self._is_game_over() or self.timer.since().seconds > time_limit):
-            time.sleep(delay)
-
-    def _is_game_over(self):
-        """ Analyses a screenshot to determine if the game is over
-
-        # TODO: this should probably also check if the game has been the same for several checks
-
-        Returns:
-            bool: True if the game is over, False otherwise
-
-        """
-        # take a screenshot
-        screen = pyautogui.screenshot(region=qwop_api.QWOP_BOUNDING_BOX)
-
-        # TODO: decide if game is over
-
-        return False
+        while self.timer.since() < timedelta(seconds=time_limit):
+            self.game_over = _check_game_over()
+            if self.game_over:
+                break
+            time.sleep(interval)
 
     def _end_game_manually(self):
         """ Performs a series of bad keystrokes that probably ends the game """
@@ -66,10 +66,6 @@ class QwopEvaluator(object):
             (float, float, etc.): tuple of fitness values. The ith fitness value is the fitness of the ith QwopStrategy.
 
         """
-        # if this is the first evaluation, wait a few seconds to make sure QWOP has loaded
-        if self.evaluations == 0:
-            time.sleep(5)
-
         # click the qwop window to give it keyboard focus
         pyautogui.moveTo(qwop_api.QWOP_CENTER[0], qwop_api.QWOP_CENTER[1], duration=0.1)
         pyautogui.click()
@@ -86,35 +82,32 @@ class QwopEvaluator(object):
 
         # evaluate the strategies
         for index, strategy in enumerate(strategies):
-            # if the last sequence of key strokes didn't end the game, end it manually
-            if self.evaluations > 0 and not self._is_game_over():
-                self._end_game_manually()
             # hit space to reset the game
             pyautogui.press('space')
 
-            # reset the timer
+            # prep for a new run
             self.timer.restart()
+            self.game_over = False
 
-            # start a thread to execute the strategy
-            strategy_execution_thread = threading.Thread(target=strategy.run)
-            strategy_execution_thread.start()
-
-            # start a thread to periodically check if the game is over
+            # start a thread to check if the game is over:
             game_over_checker = threading.Thread(target=self._loop_gameover_check, args=(0.25, time_limit))
             game_over_checker.start()
 
-            # the game_over thread terminates when the game is over or the time limit has elapsed
-            game_over_checker.join()
-            print('game over checker joined!')
+            # loop the strategy until the game ends or we hit the time limit
+            while self.timer.since() < timedelta(seconds=time_limit) and not self.game_over:
+                strategy.execute()
 
-            # stop execution of the strategy being evaluated
-            strategy.stop()
-            strategy_execution_thread.join()
-            print('strategy execution thread joined!')
+            strategy.cleanup()
+
+            # wait for the game over thread to finish its thing
+            game_over_checker.join()
 
             # TODO: take a screen shot and determine score
             fitness_values[index] = 0  # TODO: replace 0 with score
 
-            self.evaluations += 1
+            # if the strategy didn't end the game, end it manually
+            # if not self.game_over:
+            #     self._end_game_manually()
+            #     self.game_over = _check_game_over()
 
         return tuple(fitness_values)
