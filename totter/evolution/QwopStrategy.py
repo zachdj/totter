@@ -8,19 +8,18 @@ class QwopStrategy:
 
         A QWOP Strategy is a sequence of keystrokes that plays QWOP.
         Each Strategy must implement an `execute` method, which executes the keystrokes for the strategy with the correct timing.
-        When evaluating the strategy, `execute` will automatically be looped until `stop` is called.
+        When evaluating the strategy, `execute` will automatically be looped until the game ends.
 
         """
-        self.stopped = False
+        pass
 
-    def stop(self):
-        self.stopped = True
+    def cleanup(self):
+        """ Cleans up after strategy execution
 
-    def run(self):
-        # runs execute until stop is called
-        while not self.stopped:
-            self.execute()
+        This method will be called after the game has ended or the evaluation time limit has been reached
 
+        Returns: None
+        """
         # ensure all keys are up
         for key in ('q', 'w', 'o', 'p', 'space'):
             pyautogui.keyUp(key)
