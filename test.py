@@ -1,40 +1,70 @@
 import threading
 import time
+import pyautogui
 from totter.evolution.QwopStrategy import QwopStrategy
+from totter.api.evaluation import QwopEvaluator
+import totter.api.qwop as qwop_api
 
-"""
-TODO: idea about app architecture:
-    `evolution.algorithm` - ABC for a GA
-    
-    - main process runs a `evolution.algorithm` GA.
-    - spawns population, does xover, mutation, etc
-    - When time for evaluation:
-        - create an `evolution.QwopStrategy` that represents the individual 
-        - spin up an `api.QwopEvaluator`
-            - QwopEvaluator create a QWOP webview in the main thread
-            - QwopEvaluator creates a different thread to start the game, then run the QwopStrategy
-            - QwopEvaluator creates a different thread to periodically check if the game is over
-                - when the game ends, thread 3 calls `stop` the QwopStrategy then waits for it to join
-                - thread 3 kills the webview then terminates
-        
-    - GA execution continues
-    
-ALTERNATIVELY:
-    - QwopEvaluator could evaluate a set of QwopStrategies using a single QWOP instance
+def takeStep(leg, stepTime):
+    ''' Takes a step on the leg that was passed
+        leg: string, either left or right
+        time: float, number of seconds to step
+    '''
 
-"""
+    if leg == 'left':
+        pyautogui.keyDown('w')
+        pyautogui.keyDown('o')
+
+    if leg == 'right':
+        pyautogui.keyDown('q')
+        pyautogui.keyDown('p')
+
+    time.sleep(stepTime/2)
+
+    pyautogui.keyUp('q')
+    pyautogui.keyUp('w')
+    pyautogui.keyUp('o')
+    pyautogui.keyUp('p')
+
+    time.sleep(stepTime/2)
 
 
-class Qwopper(QwopStrategy):
+class QwopWinner(QwopStrategy):
     def execute(self):
-        print('qwopping')
+        # First step is special
+        pyautogui.keyDown('o')
+        time.sleep(0.2)
+        pyautogui.keyDown('w')
         time.sleep(0.5)
+        pyautogui.keyUp('o')
+        pyautogui.keyUp('w')
+
+        # Then just walk it out
+        stepTime = 3.0
+        for i in range(5):
+            takeStep("left", stepTime)
+            takeStep("right", stepTime)
 
 
-qwopper = Qwopper()
-qwopping_thread = threading.Thread(target=qwopper.run)
-qwopping_thread.start()
+class WHitter(QwopStrategy):
+    def execute(self):
+        pyautogui.keyDown('w')
+        time.sleep(2)
+        pyautogui.keyUp('w')
 
-time.sleep(2)
-qwopper.stop()
-qwopping_thread.join()
+
+class Popper(QwopStrategy):
+    def execute(self):
+        print('popping')
+        time.sleep(2)
+
+
+evaluator = QwopEvaluator()
+w = WHitter()
+p = Popper()
+winner = QwopWinner()
+fitness_vals = evaluator.evaluate((p), time_limit=200)
+print(fitness_vals)
+# time.sleep(1)  # wait for everything to finish up
+qwop_api.close_qwop_window()
+

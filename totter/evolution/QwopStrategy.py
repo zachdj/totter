@@ -1,37 +1,28 @@
-""" Abstract base class representing QWOP strategies
-
-A QWOP Strategy is a sequence of keystrokes that plays QWOP.
-Each Strategy must implement an `execute` method, which executes the keystrokes for the strategy with the correct timing.
-When evaluating the strategy, `execute` will automatically be looped until `stop` is called.
-
-"""
-
 from abc import abstractmethod
-from multiprocessing import Process
-import time
+import pyautogui
 
 
 class QwopStrategy:
     def __init__(self):
-        self.stopped = False
+        """ Abstract base class representing QWOP strategies
 
-    def stop(self):
-        self.stopped = True
+        A QWOP Strategy is a sequence of keystrokes that plays QWOP.
+        Each Strategy must implement an `execute` method, which executes the keystrokes for the strategy with the correct timing.
+        When evaluating the strategy, `execute` will automatically be looped until the game ends.
 
-    def _run_execute(self):
-        while True:
-            self.execute()
+        """
+        pass
 
-    def run(self):
-        # spawn a process to run `execute` on a loop
-        execution_process = Process(target=self._run_execute)
-        execution_process.start()
+    def cleanup(self):
+        """ Cleans up after strategy execution
 
-        # check for the stopping condition every 250 ms
-        while not self.stopped:
-            time.sleep(0.25)
+        This method will be called after the game has ended or the evaluation time limit has been reached
 
-        execution_process.terminate()
+        Returns: None
+        """
+        # ensure all keys are up
+        for key in ('q', 'w', 'o', 'p', 'space'):
+            pyautogui.keyUp(key)
 
     @abstractmethod
     def execute(self):
