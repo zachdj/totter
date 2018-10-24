@@ -5,22 +5,16 @@ from datetime import timedelta
 import threading
 import pyautogui
 import totter.api.qwop as qwop_api
-import totter.api.image_processing as image_processing
+from totter.api.image_processing import ImageProcessor
 
 from totter.utils.time import WallTimer
-
-
-def _check_game_over():
-    # TODO: this should probably also check if the game state hasn't changed for several seconds
-    screen = pyautogui.screenshot(region=qwop_api.QWOP_BOUNDING_BOX)
-    return image_processing.is_game_over(screen)
 
 
 class QwopEvaluator(object):
     def __init__(self):
         self.evaluations = 0
-        self.game_over = False  # tracks when the game ends for each evaluation
         self.timer = WallTimer()
+        self.image_processor = ImageProcessor()
         # create an instance of QWOP
         qwop_api.open_qwop_window()
         time.sleep(7)  # make sure QWOP has loaded
@@ -37,8 +31,9 @@ class QwopEvaluator(object):
 
         """
         while self.timer.since() < timedelta(seconds=time_limit):
-            self.game_over = _check_game_over()
-            if self.game_over:
+            screen = pyautogui.screenshot(region=qwop_api.QWOP_BOUNDING_BOX)
+            self.image_processor.update(screen)
+            if self.image_processor.is_game_over():
                 break
             time.sleep(interval)
 
@@ -63,7 +58,7 @@ class QwopEvaluator(object):
             time_limit (float): time limit in seconds for each evaluation
 
         Returns:
-            (float, float, etc.): tuple of fitness values. The ith fitness value is the fitness of the ith QwopStrategy.
+            ((distance1, time1), (distance2, time2), ...): distance,time pairs achieved by each QwopStrategy
 
         """
         # click the qwop window to give it keyboard focus
@@ -78,7 +73,7 @@ class QwopEvaluator(object):
             num_strategies = len(strategies)
 
         # create a vector to hold fitness values (initially filled with zeros)
-        fitness_values = [0 for i in range(0, num_strategies)]
+        fitness_values = [(0, 0) for i in range(0, num_strategies)]
 
         # evaluate the strategies
         for index, strategy in enumerate(strategies):
@@ -87,14 +82,14 @@ class QwopEvaluator(object):
 
             # prep for a new run
             self.timer.restart()
-            self.game_over = False
+            self.image_processor.reset()
 
             # start a thread to check if the game is over:
             game_over_checker = threading.Thread(target=self._loop_gameover_check, args=(0.25, time_limit))
             game_over_checker.start()
 
             # loop the strategy until the game ends or we hit the time limit
-            while self.timer.since() < timedelta(seconds=time_limit) and not self.game_over:
+            while self.timer.since() < timedelta(seconds=time_limit) and not self.image_processor.is_game_over():
                 strategy.execute()
 
             strategy.cleanup()
@@ -102,12 +97,13 @@ class QwopEvaluator(object):
             # wait for the game over thread to finish its thing
             game_over_checker.join()
 
-            # TODO: take a screen shot and determine score
-            fitness_values[index] = 0  # TODO: replace 0 with score
+            distance_run = self.image_processor.get_final_distance()
+            time = self.timer.since().seconds
+
+            fitness_values[index] = (distance_run, time)
 
             # if the strategy didn't end the game, end it manually
-            # if not self.game_over:
-            #     self._end_game_manually()
-            #     self.game_over = _check_game_over()
+            if not self.image_processor.is_game_over():
+                self._end_game_manually()
 
         return tuple(fitness_values)
