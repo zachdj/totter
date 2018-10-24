@@ -1,6 +1,6 @@
 """ Functions to process QWOP images and extract game information """
 
-
+import collections
 import pytesseract
 
 # colors will be considered identical if the Euclidean distance between them is less than this epsilon
@@ -23,10 +23,25 @@ def _colors_equal(color1, color2):
 
 
 class ImageProcessor(object):
-    def __init__(self):
+    def __init__(self, buffer_size=0):
+        """ Initialize an ImageProcessor
+
+        `ImageProcessor`s analyze QWOP screenshots and use visual features to determine how far the player has run
+        and if the game has ended.
+
+        The game ends if the game-over screen appears, or if the distance achieved has stayed the same for the last
+         `buffer_size` frames.
+
+        Args:
+            buffer_size (int):
+                number of identical-distance frames before game_over becomes true.
+                If this is zero, then the stagnation check will not be performed.
+        """
         self.latest = None
         self.current_distance = 0
         self.game_over = False
+        self.buffer_size = buffer_size
+        self.historical_distances = collections.deque(maxlen=buffer_size)
 
     def reset(self):
         self.latest = None
@@ -42,11 +57,16 @@ class ImageProcessor(object):
         if len(tokens) > 1:
             try:
                 self.current_distance = float(tokens[0])  # try to parse the first token as a number
+                self.historical_distances.append(self.current_distance)
             except ValueError:
                 pass
 
         # determine if the game is over
+        # check if the game over screen is up
         self.game_over = _colors_equal(self.latest.getpixel(_GOLD_MEDAL_POSITION), _GOLD_MEDAL_COLOR)
+        # check if the game has "stagnated" (distance hasn't changed in the last buffer_size checks)
+        if 0 < self.buffer_size <= len(self.historical_distances):
+            self.game_over = all(dist == self.historical_distances[0] for dist in self.historical_distances) or self.game_over
 
     def is_game_over(self):
         return self.game_over

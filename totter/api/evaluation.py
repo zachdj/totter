@@ -14,7 +14,7 @@ class QwopEvaluator(object):
     def __init__(self):
         self.evaluations = 0
         self.timer = WallTimer()
-        self.image_processor = ImageProcessor()
+        self.image_processor = ImageProcessor(buffer_size=16)  # buffer size of 16 corresponds to 4 seconds
         # create an instance of QWOP
         qwop_api.open_qwop_window()
         time.sleep(7)  # make sure QWOP has loaded
