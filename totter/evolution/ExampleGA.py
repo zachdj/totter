@@ -15,6 +15,7 @@ import pyautogui
 import random
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 
+
 """ Step 2: Create your GA by inheriting from GeneticAlgorithm """
 class ExampleGA(GeneticAlgorithm):
 
@@ -62,9 +63,13 @@ class ExampleGA(GeneticAlgorithm):
     In this case, we use deterministic tournament selection with tournament size 5
     """
     def select_parents(self, population, n):
-        competitors = random.sample(population, n)
-        winner = max(competitors, key=lambda individual: individual.fitness)
-        return winner
+        parents = list()
+        for i in range(0, n):
+            competitors = random.sample(population, 5)
+            winner = max(competitors, key=lambda individual: individual.fitness)
+            parents.append(winner)
+
+        return parents
 
     """ Step 7: Crossover 
     Specify the crossover function used by your GA.
@@ -98,6 +103,8 @@ class ExampleGA(GeneticAlgorithm):
             # change existing keystroke
             index = random.choice(range(0, len(mutant)))
             mutant[index] = new_keystroke
+
+        return mutant
 
     """ Step 9: Repair 
     If your algorithm makes use of a repair operator, specify it here.  The repair operator should take a genome
