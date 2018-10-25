@@ -22,14 +22,15 @@ QWOP_BOUNDING_BOX = (
 )
 
 # create a selenium driver to open web pages
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+driver_dir = os.path.join(current_dir, 'drivers')
 # find the appropriate geckodriver for the current platform
 if platform.system() == 'Linux':
-    geckopath = os.path.join('totter', 'bin', 'nix', 'geckodriver')
+    geckopath = os.path.join(driver_dir, 'nix', 'geckodriver')
 elif platform.system() == 'Darwin':
-    geckopath = os.path.join('totter', 'bin', 'osx', 'geckodriver')
+    geckopath = os.path.join(driver_dir, 'osx', 'geckodriver')
 else:
-    geckopath = os.path.join('totter', 'bin', 'win', 'geckodriver.exe')
+    geckopath = os.path.join(driver_dir, 'win', 'geckodriver.exe')
 
 geckopath = os.path.abspath(geckopath)
 
