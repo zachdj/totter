@@ -136,7 +136,7 @@ class ExampleGA(GeneticAlgorithm):
 
     """ Step 11: You're done!  
     Go to the totter.evolution.__main__ file and import your new GA.  
-    It should be available to run using the CLI
+    It should be available to run using the CLI:
     
-    python -m totter.evolution --ga <my_ga>
+    python -m totter evolve --algorithm ExampleGA
     """
