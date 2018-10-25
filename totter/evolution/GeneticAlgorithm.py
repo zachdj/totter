@@ -55,9 +55,9 @@ class GeneticAlgorithm(object):
         while self.total_evaluations < self.max_evaluations:
             # select parents
             if self.steady_state:
-                parents = self.select_parents(2)
+                parents = self.select_parents(population, 2)
             else:
-                parents = self.select_parents(self.pop_size)
+                parents = self.select_parents(population, self.pop_size)
 
             # make children using crossover
             offspring = list()
@@ -79,7 +79,7 @@ class GeneticAlgorithm(object):
                 child = Individual(genome=child_genome)
                 self._evaluate(child)
                 offspring[idx] = child
-                if child.fitness > self.best_indv.fitness:
+                if self.best_indv is None or child.fitness > self.best_indv.fitness:
                     self.best_indv = child
 
             # update population
