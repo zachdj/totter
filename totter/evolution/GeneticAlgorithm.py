@@ -14,8 +14,8 @@ from totter.evolution.QwopStrategy import QwopStrategy
 
 class GeneticAlgorithm(object):
     def __init__(self,
-                 max_evaluations=2000,
-                 evaluation_time_limit=600,
+                 evaluations=2000,
+                 eval_time_limit=600,
                  pop_size=20,
                  cx_prob=0.9,
                  mt_prob=0.05,
@@ -24,7 +24,7 @@ class GeneticAlgorithm(object):
 
         self.random_seed = seed
 
-        self.qwop_evaluator = QwopEvaluator(time_limit=evaluation_time_limit)
+        self.qwop_evaluator = QwopEvaluator(time_limit=eval_time_limit)
 
         self.pop_size = pop_size
         self.cx_prob = cx_prob
@@ -33,8 +33,24 @@ class GeneticAlgorithm(object):
 
         # variables that track progress
         self.total_evaluations = 0
-        self.max_evaluations = max_evaluations
+        self.max_evaluations = evaluations
         self.best_indv = None
+
+    def save(self):
+        """ TODO: serialize the current state of the algorithm to disk
+
+        Returns:
+
+        """
+        pass
+
+    def load(self):
+        """ TODO: deserialize the latest saved state from disk
+
+        Returns:
+
+        """
+        pass
 
     def run(self):
         """ Runs the GA until the maximum number of iterations is achieved
