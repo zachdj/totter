@@ -7,6 +7,7 @@ from abc import abstractmethod
 import os
 import copy
 import random
+import json
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -29,7 +30,8 @@ class GeneticAlgorithm(object):
 
         self.random_seed = seed
 
-        self.qwop_evaluator = QwopEvaluator(time_limit=eval_time_limit)
+        self.eval_time_limit = eval_time_limit
+        self.qwop_evaluator = QwopEvaluator(time_limit=self.eval_time_limit)
 
         self.pop_size = pop_size
         self.cx_prob = cx_prob
@@ -97,7 +99,31 @@ class GeneticAlgorithm(object):
             str: path to the directory where results are saved
 
         """
-        pass
+        data = {
+            'name': self.__class__.__name__,
+            'config': {
+                'evaluations': self.max_evaluations,
+                'eval_time_limit': self.eval_time_limit,
+                'pop_size': self.pop_size,
+                'cx_prob': self.cx_prob,
+                'mt_prob': self.mt_prob,
+                'steady_state': self.steady_state,
+                'seed': self.random_seed
+            },
+            'best_individual': self.best_indv.genome,
+            'best_fitness': self.best_indv.fitness,
+            'average_fitness': sum(map(lambda indv: indv.fitness, self.population)) / len(self.population)
+        }
+
+        # save the best individual and his fitness
+        save_path = storage.get(os.path.join(self.__class__.__name__, 'results'))
+        with open(os.path.join(save_path, 'results.json'), 'w') as data_file:
+            json.dump(data, data_file)
+
+        # save the related plot
+        self.plot(save=True)
+
+        return save_path
 
     def save_current_state(self):
         """ TODO: serialize the current state of the algorithm to disk
