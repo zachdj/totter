@@ -6,6 +6,7 @@ dependencies:
   - pip
   - python=3.6
   - numpy
+  - matplotlib
   - selenium
   - pip:
     - pyautogui
