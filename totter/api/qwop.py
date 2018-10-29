@@ -22,28 +22,33 @@ QWOP_BOUNDING_BOX = (
 )
 
 # create a selenium driver to open web pages
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+driver_dir = os.path.join(current_dir, 'drivers')
 # find the appropriate geckodriver for the current platform
 if platform.system() == 'Linux':
-    geckopath = os.path.join('totter', 'bin', 'nix', 'geckodriver')
+    geckopath = os.path.join(driver_dir, 'nix', 'geckodriver')
 elif platform.system() == 'Darwin':
-    geckopath = os.path.join('totter', 'bin', 'osx', 'geckodriver')
+    geckopath = os.path.join(driver_dir, 'osx', 'geckodriver')
 else:
-    geckopath = os.path.join('totter', 'bin', 'win', 'geckodriver.exe')
+    geckopath = os.path.join(driver_dir, 'win', 'geckodriver.exe')
 
 geckopath = os.path.abspath(geckopath)
 
-browser = webdriver.Firefox(executable_path=geckopath)
-# move the browser window to a fixed and predictable location
-browser.set_window_size(width=QWOP_BOUNDING_BOX[2], height=QWOP_BOUNDING_BOX[3])
-browser.set_window_position(x=QWOP_BOUNDING_BOX[0], y=QWOP_BOUNDING_BOX[1])
+_browser = None
 
 
 def open_qwop_window():
     """ Opens a browser tab with the HTML5 version of QWOP """
-    browser.get(_QWOP_URL)
+    global _browser
+    _browser = webdriver.Firefox(executable_path=geckopath)
+    # move the browser window to a fixed and predictable location
+    _browser.set_window_size(width=QWOP_BOUNDING_BOX[2], height=QWOP_BOUNDING_BOX[3])
+    _browser.set_window_position(x=QWOP_BOUNDING_BOX[0], y=QWOP_BOUNDING_BOX[1])
+
+    _browser.get(_QWOP_URL)
 
 
 def close_qwop_window():
     """ Kills the open webview """
-    browser.quit()
+    global _browser
+    _browser.quit()
