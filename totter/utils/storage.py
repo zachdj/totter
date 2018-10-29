@@ -25,9 +25,6 @@ def get_root():
     root = os.environ.get('TOTTER_STORAGE', '../results')
     root = Path(root)
 
-    if not root.is_absolute():
-        logger.warning(f'storage root is not absolute: {root}')
-
     return root
 
 
