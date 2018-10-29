@@ -51,8 +51,6 @@ class GeneticAlgorithm(object):
 
         """
         history = np.array(self.history)
-        print(history)
-        print(history.shape)
 
         generations = history[:, 0]
         best = history[:, 1]
