@@ -3,20 +3,21 @@
 This GA will always seek to maximize fitness
 """
 
-from abc import abstractmethod
-import os
 import copy
-import random
 import json
-import pickle
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pickle
+import random
+
+from abc import abstractmethod
 from matplotlib.ticker import MaxNLocator
 
-from totter.api.evaluation import QwopEvaluator
-from totter.utils.time import WallTimer
-import totter.utils.storage as storage
+from totter.api.qwop import QwopEvaluator
 from totter.evolution.QwopStrategy import QwopStrategy
+import totter.utils.storage as storage
+from totter.utils.time import WallTimer
 
 
 class GeneticAlgorithm(object):

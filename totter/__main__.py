@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 
-from totter.api.qwop import close_qwop_window
+from totter.api.qwop import stop_qwop
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
@@ -74,7 +74,7 @@ def main():
 
         # run the ga
         time = algorithm.run()
-        close_qwop_window()
+        stop_qwop()
 
         # report results and save state
         logger.info(f'Evolution completed after {time}.\n Best solution found: {algorithm.best_indv}')
