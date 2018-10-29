@@ -9,6 +9,7 @@ import copy
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 from totter.api.evaluation import QwopEvaluator
 from totter.utils.time import WallTimer
@@ -37,15 +38,27 @@ class GeneticAlgorithm(object):
 
         # variables that track progress
         self.total_evaluations = 0
+        self.generations = 1
         self.max_evaluations = evaluations
         self.best_indv = None
         self.history = []  # stores (generation, best_fitness, average_fitness) tuples
 
-    def plot(self, save=True):
+        # seed RNG
+        random.seed(self.random_seed)
+
+        # create a random population and evaluate them
+        self.population = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
+        self.best_indv = self.population[0]
+        for indv in self.population:
+            self._evaluate(indv)
+            if indv.fitness > self.best_indv.fitness:
+                self.best_indv = indv
+
+    def plot(self, save=False):
         """ Plot the algorithm's history of best fitness and average fitness
 
         Args:
-            save (bool): if set, the plot will be saved to the RESULTS directory
+            save (bool): if set, the plot will be saved to the RESULTS directory instead of shown
 
         Returns: None
 
@@ -57,11 +70,16 @@ class GeneticAlgorithm(object):
         average = history[:, 2]
 
         fig, ax1 = plt.subplots()
-        line1 = ax1.plot(generations, best, "b-", label="Best Fitness")
-        line2 = ax1.plot(generations, average, "r-", label="Average fitness")
+        # label the axes
         ax1.set_xlabel("Generation")
         ax1.set_ylabel("Fitness")
+        # make `generations` axis show integer labels
+        ax = fig.gca()
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        line1 = ax1.plot(generations, best, "b-", label="Best Fitness")
+        line2 = ax1.plot(generations, average, "r-", label="Average fitness")
 
+        # construct legend
         lns = line1 + line2
         labs = [l.get_label() for l in lns]
         ax1.legend(lns, labs, loc="center right")
@@ -89,7 +107,6 @@ class GeneticAlgorithm(object):
         """
         pass
 
-
     def load(self):
 
         """ TODO: deserialize the latest saved state from disk
@@ -105,25 +122,14 @@ class GeneticAlgorithm(object):
         Returns: time taken during the run (in seconds)
 
         """
-        # seed RNG
-        random.seed(self.random_seed)
-
-        # create a random population
-        population = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
-        self.best_indv = population[0]
-        for indv in population:
-            self._evaluate(indv)
-            if indv.fitness > self.best_indv.fitness:
-                self.best_indv = indv
-
         # time the run
         timer = WallTimer()
         while self.total_evaluations < self.max_evaluations:
             # select parents
             if self.steady_state:
-                parents = self.select_parents(population, 2)
+                parents = self.select_parents(self.population, 2)
             else:
-                parents = self.select_parents(population, self.pop_size)
+                parents = self.select_parents(self.population, self.pop_size)
 
             # make children using crossover
             offspring = list()
@@ -153,15 +159,17 @@ class GeneticAlgorithm(object):
                     self.best_indv = child
 
                 # do replacement
-                replacement_index = self.replace(population, child)
+                replacement_index = self.replace(self.population, child)
                 if replacement_index is not None:
-                    population[replacement_index] = child
+                    self.population[replacement_index] = child
 
             # record history
             if self.best_indv is not None:
                 best_fitness = self.best_indv.fitness
-                average_fitness = sum(map(lambda indv: indv.fitness, population)) / len(population)
-                self.history.append([self.total_evaluations, best_fitness, average_fitness])
+                average_fitness = sum(map(lambda indv: indv.fitness, self.population)) / len(self.population)
+                self.history.append([self.generations, best_fitness, average_fitness])
+
+            self.generations += 1
 
         return timer.since()
 
