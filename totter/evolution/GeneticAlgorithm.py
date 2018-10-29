@@ -4,11 +4,15 @@ This GA will always seek to maximize fitness
 """
 
 from abc import abstractmethod
+import os
 import copy
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 from totter.api.evaluation import QwopEvaluator
 from totter.utils.time import WallTimer
+import totter.utils.storage as storage
 from totter.evolution.QwopStrategy import QwopStrategy
 
 
@@ -35,16 +39,61 @@ class GeneticAlgorithm(object):
         self.total_evaluations = 0
         self.max_evaluations = evaluations
         self.best_indv = None
+        self.history = []  # stores (generation, best_fitness, average_fitness) tuples
 
-    def save(self):
-        """ TODO: serialize the current state of the algorithm to disk
+    def plot(self, save=True):
+        """ Plot the algorithm's history of best fitness and average fitness
+
+        Args:
+            save (bool): if set, the plot will be saved to the RESULTS directory
+
+        Returns: None
+
+        """
+        history = np.array(self.history)
+        print(history)
+        print(history.shape)
+
+        generations = history[:, 0]
+        best = history[:, 1]
+        average = history[:, 2]
+
+        fig, ax1 = plt.subplots()
+        line1 = ax1.plot(generations, best, "b-", label="Best Fitness")
+        line2 = ax1.plot(generations, average, "r-", label="Average fitness")
+        ax1.set_xlabel("Generation")
+        ax1.set_ylabel("Fitness")
+
+        lns = line1 + line2
+        labs = [l.get_label() for l in lns]
+        ax1.legend(lns, labs, loc="center right")
+
+        if save:
+            save_path = storage.get(os.path.join(self.__class__.__name__, 'figures'))
+            plt.savefig(os.path.join(save_path, 'progress.png'))
+        else:
+            plt.show()
+
+    def save_results(self):
+        """ Save the best individual, his fitness, the average fitness, and related graphs
 
         Returns:
+            str: path to the directory where results are saved
 
         """
         pass
 
+    def save_current_state(self):
+        """ TODO: serialize the current state of the algorithm to disk
+
+        Returns: None
+
+        """
+        pass
+
+
     def load(self):
+
         """ TODO: deserialize the latest saved state from disk
 
         Returns:
@@ -63,8 +112,11 @@ class GeneticAlgorithm(object):
 
         # create a random population
         population = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
+        self.best_indv = population[0]
         for indv in population:
             self._evaluate(indv)
+            if indv.fitness > self.best_indv.fitness:
+                self.best_indv = indv
 
         # time the run
         timer = WallTimer()
@@ -95,14 +147,23 @@ class GeneticAlgorithm(object):
                 child = Individual(genome=child_genome)
                 self._evaluate(child)
                 offspring[idx] = child
-                if self.best_indv is None or child.fitness > self.best_indv.fitness:
-                    self.best_indv = child
 
             # update population
             for child in offspring:
+                # update best individual the GA has found so far
+                if self.best_indv is None or child.fitness > self.best_indv.fitness:
+                    self.best_indv = child
+
+                # do replacement
                 replacement_index = self.replace(population, child)
                 if replacement_index is not None:
                     population[replacement_index] = child
+
+            # record history
+            if self.best_indv is not None:
+                best_fitness = self.best_indv.fitness
+                average_fitness = sum(map(lambda indv: indv.fitness, population)) / len(population)
+                self.history.append([self.total_evaluations, best_fitness, average_fitness])
 
         return timer.since()
 
