@@ -8,6 +8,7 @@ import os
 import copy
 import random
 import json
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -88,7 +89,7 @@ class GeneticAlgorithm(object):
 
         if save:
             save_path = storage.get(os.path.join(self.__class__.__name__, 'figures'))
-            plt.savefig(os.path.join(save_path, 'progress.png'))
+            plt.savefig(os.path.join(save_path, 'fitness_vs_time.png'))
         else:
             plt.show()
 
@@ -126,21 +127,60 @@ class GeneticAlgorithm(object):
         return save_path
 
     def save_current_state(self):
-        """ TODO: serialize the current state of the algorithm to disk
+        """ Serialize the current state of the GA to disk
+
+        This method serializes all the info needed to restart the GA from the current state.
 
         Returns: None
 
         """
-        pass
+
+        data = {
+            'name': self.__class__.__name__,
+            'population': self.population,
+            'generations': self.generations,
+            'total_evaluations': self.total_evaluations,
+            'history': self.history,
+            'config': {
+                'evaluations': self.max_evaluations,
+                'eval_time_limit': self.eval_time_limit,
+                'pop_size': self.pop_size,
+                'cx_prob': self.cx_prob,
+                'mt_prob': self.mt_prob,
+                'steady_state': self.steady_state,
+                'seed': self.random_seed
+            },
+            'best_individual': self.best_indv
+        }
+        save_path = storage.get(os.path.join(self.__class__.__name__, 'progress'))
+        with open(os.path.join(save_path, 'progress.totter'), 'wb') as data_file:
+            pickle.dump(data, data_file)
 
     def load(self):
+        """ Reset the GA to the state matching its most recent progress file
 
-        """ TODO: deserialize the latest saved state from disk
-
-        Returns:
+        Returns: None
 
         """
-        pass
+        save_path = storage.get(os.path.join(self.__class__.__name__, 'progress'))
+        save_filepath = os.path.join(save_path, 'progress.totter')
+        if os.path.exists(save_filepath):
+            with open(save_filepath, 'rb') as data_file:
+                data = pickle.load(data_file)
+                self.population = data['population']
+                self.generations = data['generations']
+                self.total_evaluations = data['total_evaluations']
+                self.history = data['history']
+                config = data['config']
+                self.max_evaluations = data['total_evaluations'] + self.max_evaluations
+                self.qwop_evaluator.time_limit = config['eval_time_limit']
+                self.pop_size = config['pop_size']
+                self.cx_prob = config['cx_prob']
+                self.mt_prob = config['mt_prob']
+                self.steady_state = config['steady_state']
+                self.random_seed = config['seed']
+                random.seed(self.random_seed)
+                self.best_indv = data['best_individual']
 
     def run(self):
         """ Runs the GA until the maximum number of iterations is achieved
