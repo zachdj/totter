@@ -1,0 +1,15 @@
+name: totter
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+  - python=3.6
+  - numpy
+  - matplotlib
+  - selenium
+  - pip:
+    - pyobjc-core
+    - pyobjc
+    - pyautogui
+    - pytesseract
