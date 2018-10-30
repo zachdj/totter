@@ -1,7 +1,17 @@
-import pyautogui
+""" Functions for creating and positioning a webview with the QWOP game """
+
 import os
 import platform
+import pyautogui
+import threading
+import time
+
+from datetime import timedelta
 from selenium import webdriver
+
+from totter.api.image_processing import ImageProcessor
+from totter.evolution.QwopStrategy import QwopStrategy
+from totter.utils.time import WallTimer
 
 # determine size of screen
 screen_width, screen_height = pyautogui.size()
@@ -37,7 +47,7 @@ geckopath = os.path.abspath(geckopath)
 _browser = None
 
 
-def open_qwop_window():
+def _open_qwop_window():
     """ Opens a browser tab with the HTML5 version of QWOP """
     global _browser
     _browser = webdriver.Firefox(executable_path=geckopath)
@@ -48,7 +58,162 @@ def open_qwop_window():
     _browser.get(_QWOP_URL)
 
 
-def close_qwop_window():
+def _close_qwop_window():
     """ Kills the open webview """
     global _browser
     _browser.quit()
+
+
+def _end_game_manually():
+    """ Performs a series of bad keystrokes that probably ends the game """
+    pyautogui.keyDown('w')
+    pyautogui.keyDown('o')
+    time.sleep(1)
+    pyautogui.keyUp('w')
+    pyautogui.keyUp('o')
+    pyautogui.keyDown('q')
+    pyautogui.keyDown('p')
+    time.sleep(3)
+    pyautogui.keyUp('q')
+    pyautogui.keyUp('p')
+
+
+def start_qwop():
+    """ Create a QWOP instance and wait for it to load """
+    _open_qwop_window()
+    time.sleep(5)
+
+
+def stop_qwop():
+    """ Stop the QWOP instance if one is open """
+    global _browser
+    if _browser is not None:
+        _close_qwop_window()
+
+
+class QwopSimulator(object):
+    def __init__(self, time_limit, buffer_size=16):
+        """ Initialize a QwopSimulator
+        QwopSimulator provides a method for running a QwopStrategy object in an instance of the QWOP game
+
+        Args:
+            time_limit (float): time limit in seconds for the simulation
+            buffer_size (int):
+                number of checks to perform in the same-history ending condition.
+                If the distance run is the same for `buffer_size` checks in a row, then the simulation is terminated.
+                Checks are performed 3-4 times per second depending on processor speed.
+        """
+        self.time_limit = time_limit
+        self.timer = WallTimer()
+        self.image_processor = ImageProcessor(buffer_size=buffer_size)
+
+    def _loop_gameover_check(self, interval=0.25):
+        """ Checks if the game has ended every `interval` seconds.
+        Terminates when the game ends or after the simulator's time limit is reached.
+
+        Args:
+            interval (float): time in seconds between game over checks
+
+        Returns: None
+        """
+        while self.timer.since() < timedelta(seconds=self.time_limit):
+            screen = pyautogui.screenshot(region=QWOP_BOUNDING_BOX)
+            self.image_processor.update(screen)
+            if self.image_processor.is_game_over():
+                break
+            time.sleep(interval)
+
+    def is_game_over(self):
+        return self.image_processor.is_game_over()
+
+    def simulate(self, strategy, qwop_started=False):
+        """ Run the given QwopStrategy
+
+        Args:
+            strategy (QwopStrategy): the strategy to execute
+            qwop_started (bool): if set, the simulator will assume that a QWOP window has already been opened
+
+        Returns:
+            (float, float): distance run, time taken
+
+        """
+        if not qwop_started:
+            start_qwop()
+
+        # click the qwop window to give it keyboard focus
+        pyautogui.moveTo(QWOP_CENTER[0], QWOP_CENTER[1], duration=0.1)
+        pyautogui.click()
+
+        # press spacebar to restart the simulator if necessary
+        pyautogui.press('space')
+
+        # prep for a new run
+        self.timer.restart()
+        self.image_processor.reset()
+
+        # start a thread to check if the game is over:
+        game_over_checker = threading.Thread(target=self._loop_gameover_check, args=(0.25,))
+        game_over_checker.start()
+
+        # loop the strategy until the game ends or we hit the time limit
+        while self.timer.since() < timedelta(seconds=self.time_limit) and not self.image_processor.is_game_over():
+            strategy.execute()
+
+        strategy.cleanup()
+
+        # wait for the game over thread to finish its thing
+        game_over_checker.join()
+
+        distance_run = self.image_processor.get_final_distance()
+        run_time = self.timer.since().seconds
+
+        # if the simulator started its own QWOP window, then it should be destroyed
+        if not qwop_started:
+            stop_qwop()
+
+        return distance_run, run_time
+
+
+class QwopEvaluator(object):
+    def __init__(self, time_limit):
+        """ Initialize a QwopEvaluator
+        QwopEvaluator objects run QwopStrategy objects and report the distance run and time taken.
+
+        Args:
+            time_limit (float): time limit in seconds for each evaluation
+        """
+        self.evaluations = 0
+        self.simulator = QwopSimulator(time_limit=time_limit)
+        # create an instance of QWOP
+        start_qwop()
+
+    def evaluate(self, strategies):
+        """ Evaluates a QwopStrategy or a set of QwopStrategy objects
+
+        Args:
+            strategies (QwopStrategy or Iterable<QwopStrategy>): set of strategies to evaluate
+
+        Returns:
+            ((distance1, time1), (distance2, time2), ...): distance,time pairs achieved by each QwopStrategy
+        """
+        # check if a single strategy has been passed
+        try:
+            num_strategies = len(strategies)
+        except TypeError:  # raised if a single QwopStrategy was passed
+            strategies = [strategies]
+            num_strategies = len(strategies)
+
+        # create a vector to hold fitness values (initially filled with zeros)
+        fitness_values = [(0, 0) for i in range(0, num_strategies)]
+
+        # evaluate the strategies
+        for index, strategy in enumerate(strategies):
+            distance_run, time_taken = self.simulator.simulate(strategy, qwop_started=True)
+
+            fitness_values[index] = (distance_run, time)
+
+            # if the strategy didn't end the game, end it manually
+            if not self.simulator.is_game_over():
+                _end_game_manually()
+
+        return tuple(fitness_values)

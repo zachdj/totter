@@ -16,13 +16,17 @@ logger = logging.getLogger(__name__)
 def get_root():
     """Set the storage root for persistent data.
     This method reads from the ``TOTTER_STORAGE`` environment variable,
-    defaulting to ``../results``.
+    defaulting to ``totter/results``.
 
     Returns:
         root (Path): The location of the storage root.
 
     """
-    root = os.environ.get('TOTTER_STORAGE', '../results')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
+    default_storage_dir = os.path.join(parent_dir, 'results')
+
+    root = os.environ.get('TOTTER_STORAGE', default_storage_dir)
     root = Path(root)
 
     return root
