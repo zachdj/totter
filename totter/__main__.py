@@ -4,14 +4,13 @@ import logging
 import os
 import sys
 
-import totter.utils.storage as storage
-
 from totter.api.qwop import stop_qwop, QwopSimulator
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 from totter.evolution.QwopStrategy import QwopStrategy
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
-from totter.evolution.ExampleGA import ExampleGA
+from totter.evolution.algorithms.DoNothing import DoNothing
+from totter.evolution.algorithms.ExampleGA import ExampleGA
 
 
 def main():

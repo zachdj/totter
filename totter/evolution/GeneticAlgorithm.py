@@ -122,7 +122,6 @@ class GeneticAlgorithm(object):
         # save the best individual and his fitness
         with open(self.get_results_path(), 'w') as data_file:
             json.dump(data, data_file)
-            print('saved data')
 
         # save the related plot
         self.plot(save=True)
