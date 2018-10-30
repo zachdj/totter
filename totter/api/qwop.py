@@ -81,7 +81,7 @@ def _end_game_manually():
 def start_qwop():
     """ Create a QWOP instance and wait for it to load """
     _open_qwop_window()
-    time.sleep(6)
+    time.sleep(5)
 
 
 def stop_qwop():
