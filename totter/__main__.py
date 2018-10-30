@@ -9,6 +9,7 @@ from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 from totter.evolution.QwopStrategy import QwopStrategy
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
+from totter.evolution.algorithms.DoNothing import DoNothing
 from totter.evolution.algorithms.ExampleGA import ExampleGA
 
 
