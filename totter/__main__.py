@@ -1,9 +1,14 @@
 import argparse
+import json
 import logging
+import os
 import sys
 
-from totter.api.qwop import stop_qwop
+import totter.utils.storage as storage
+
+from totter.api.qwop import stop_qwop, QwopSimulator
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
+from totter.evolution.QwopStrategy import QwopStrategy
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.ExampleGA import ExampleGA
@@ -29,7 +34,8 @@ def main():
     subcommands = parser.add_subparsers()
 
     # evolution
-    evolve = subcommands.add_parser('evolve', argument_default=argparse.SUPPRESS, description='Evolve solutions using a GA.')
+    evolve = subcommands.add_parser('evolve', argument_default=argparse.SUPPRESS,
+                                    description='Evolve solutions using the selected GA.')
     evolve.set_defaults(action='evolve')
     evolve.add_argument('--evaluations', type=int,
                         help='Maximum number of fitness evaluations before the algorithm terminates')
@@ -47,7 +53,10 @@ def main():
                         help='If set, the GA will load its starting state from the latest saved progress file')
 
     # simulation
-    # TODO
+    simulate = subcommands.add_parser('simulate', argument_default=argparse.SUPPRESS,
+                                    description='Play the game with the best solution discovered by the GA.')
+    simulate.set_defaults(action='simulate')
+    simulate.add_argument('--saved_result', type=str, help='Size of the population')
 
     args = parser.parse_args()
     args = vars(args)
@@ -84,6 +93,28 @@ def main():
             algorithm.save_current_state()
         save_path = algorithm.save_results()
         logger.info(f'Results saved to {save_path}')
+
+    elif action == 'simulate':
+        if 'saved_result' in args:
+            filepath = args['saved_result']
+        else:
+            filepath = algorithm_class.get_results_path()
+
+        if not os.path.exists(filepath):
+            # if there is no results file, then we should quit
+            logging.error(f'No results found for algorithm {algorithm_name} at {filepath}.\n'
+                          f'Make sure you run evolve before using the simulate command.')
+        else:
+            # run the simulation
+            with open(filepath, 'r') as results_file:
+                data = json.load(results_file)
+
+            best_genome = data['best_individual']
+            algorithm = algorithm_class(pop_size=1)  # we just need a shell to get the execute method
+            strategy = QwopStrategy(execution_function=algorithm.genome_to_phenotype(best_genome))
+            simulator = QwopSimulator(time_limit=600)  # TODO: time limit is rather arbitrary
+            simulator.simulate(strategy, qwop_started=True)
+            stop_qwop()
 
 
 if __name__ == '__main__':
