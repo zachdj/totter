@@ -41,6 +41,8 @@ def main():
     evolve.add_argument('--mt_prob', type=float, help='Probability of mutation, expressed as a decimal')
     evolve.add_argument('--generational', action='store_true',
                         help='If set, the GA will run in generational mode instead of steady-state mode')
+    evolve.add_argument('--save_progress', action='store_true',
+                        help='If set, the GA will save its current state in a "progress" file after completion')
     evolve.add_argument('--load', action='store_true',
                         help='If set, the GA will load its starting state from the latest saved progress file')
 
@@ -78,7 +80,8 @@ def main():
 
         # report results and save state
         logger.info(f'Evolution completed after {time}.\n Best solution found: {algorithm.best_indv}')
-        algorithm.save_current_state()
+        if 'save_progress' in args:
+            algorithm.save_current_state()
         save_path = algorithm.save_results()
         logger.info(f'Results saved to {save_path}')
 

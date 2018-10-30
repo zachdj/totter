@@ -50,13 +50,9 @@ class GeneticAlgorithm(object):
         # seed RNG
         random.seed(self.random_seed)
 
-        # create a random population and evaluate them
+        # create a random population
         self.population = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
         self.best_indv = self.population[0]
-        for indv in self.population:
-            self._evaluate(indv)
-            if indv.fitness > self.best_indv.fitness:
-                self.best_indv = indv
 
     def plot(self, save=False):
         """ Plot the algorithm's history of best fitness and average fitness
@@ -189,6 +185,15 @@ class GeneticAlgorithm(object):
         Returns: time taken during the run (in seconds)
 
         """
+        # ensure population has been evaluated and best_indv is up-to-date
+        # this is necesary after a GA is constructed or after loading a GA from disk
+        for indv in self.population:
+            if indv.fitness is None:
+                print('last-minute eval')
+                self._evaluate(indv)
+            if indv.fitness > self.best_indv.fitness:
+                self.best_indv = indv
+
         # time the run
         timer = WallTimer()
         while self.total_evaluations < self.max_evaluations:
@@ -380,7 +385,7 @@ class Individual:
         return cloned_self
 
     def __str__(self):
-        return f'Individual: {self.genome}\tFitness: {self.fitness}'
+        return f'Individual: {self.genome}\nFitness: {self.fitness}'
 
     def __len__(self):
         return len(self.genome)
