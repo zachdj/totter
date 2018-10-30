@@ -3,20 +3,21 @@
 This GA will always seek to maximize fitness
 """
 
-from abc import abstractmethod
-import os
 import copy
-import random
 import json
-import pickle
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pickle
+import random
+
+from abc import abstractmethod
 from matplotlib.ticker import MaxNLocator
 
-from totter.api.evaluation import QwopEvaluator
-from totter.utils.time import WallTimer
-import totter.utils.storage as storage
+from totter.api.qwop import QwopEvaluator
 from totter.evolution.QwopStrategy import QwopStrategy
+import totter.utils.storage as storage
+from totter.utils.time import WallTimer
 
 
 class GeneticAlgorithm(object):
@@ -49,13 +50,9 @@ class GeneticAlgorithm(object):
         # seed RNG
         random.seed(self.random_seed)
 
-        # create a random population and evaluate them
+        # create a random population
         self.population = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
         self.best_indv = self.population[0]
-        for indv in self.population:
-            self._evaluate(indv)
-            if indv.fitness > self.best_indv.fitness:
-                self.best_indv = indv
 
     def plot(self, save=False):
         """ Plot the algorithm's history of best fitness and average fitness
@@ -93,6 +90,12 @@ class GeneticAlgorithm(object):
         else:
             plt.show()
 
+    @classmethod
+    def get_results_path(cls):
+        save_path = storage.get(os.path.join(cls.__name__, 'results'))
+        file_path = os.path.join(save_path, 'results.json')
+        return file_path
+
     def save_results(self):
         """ Save the best individual, his fitness, the average fitness, and related graphs
 
@@ -117,14 +120,14 @@ class GeneticAlgorithm(object):
         }
 
         # save the best individual and his fitness
-        save_path = storage.get(os.path.join(self.__class__.__name__, 'results'))
-        with open(os.path.join(save_path, 'results.json'), 'w') as data_file:
+        with open(self.get_results_path(), 'w') as data_file:
             json.dump(data, data_file)
+            print('saved data')
 
         # save the related plot
         self.plot(save=True)
 
-        return save_path
+        return self.get_results_path()
 
     def save_current_state(self):
         """ Serialize the current state of the GA to disk
@@ -159,7 +162,7 @@ class GeneticAlgorithm(object):
     def load(self):
         """ Reset the GA to the state matching its most recent progress file
 
-        Returns: None
+        Returns: bool: True if loading was successful, False otherwise
 
         """
         save_path = storage.get(os.path.join(self.__class__.__name__, 'progress'))
@@ -182,12 +185,24 @@ class GeneticAlgorithm(object):
                 random.seed(self.random_seed)
                 self.best_indv = data['best_individual']
 
+            return True
+
+        return False
+
     def run(self):
         """ Runs the GA until the maximum number of iterations is achieved
 
         Returns: time taken during the run (in seconds)
 
         """
+        # ensure population has been evaluated and best_indv is up-to-date
+        # this is necesary after a GA is constructed or after loading a GA from disk
+        for indv in self.population:
+            if indv.fitness is None:
+                self._evaluate(indv)
+            if indv.fitness > self.best_indv.fitness:
+                self.best_indv = indv
+
         # time the run
         timer = WallTimer()
         while self.total_evaluations < self.max_evaluations:
@@ -379,7 +394,7 @@ class Individual:
         return cloned_self
 
     def __str__(self):
-        return f'Individual: {self.genome}\tFitness: {self.fitness}'
+        return f'Individual: {self.genome}\nFitness: {self.fitness}'
 
     def __len__(self):
         return len(self.genome)
