@@ -79,7 +79,13 @@ class ImageProcessor(object):
         tokens = text.split()
         try:
             distance_value_idx = tokens.index('metres') - 1  # the distance will preceed the word 'metres'
-            return float(tokens[distance_value_idx])
+            distance = float(tokens[distance_value_idx])
+            # detect if there's a serious mismatch between observed and final distances
+            # this helps make the distance-finding mechanism robust against tesseract errors
+            if abs(distance - self.current_distance) > 1:
+                return min(distance, self.current_distance)
+            else:
+                return distance
         except ValueError:
             # 'metres' not found in the list of tokens.  Defer to top-of-window distance
             return self.current_distance
