@@ -52,8 +52,8 @@ def _open_qwop_window():
     global _browser
     _browser = webdriver.Firefox(executable_path=geckopath)
     # move the browser window to a fixed and predictable location
-    _browser.set_window_size(width=QWOP_BOUNDING_BOX[2], height=QWOP_BOUNDING_BOX[3])
-    _browser.set_window_position(x=QWOP_BOUNDING_BOX[0], y=QWOP_BOUNDING_BOX[1])
+    _browser.set_window_size(width=QWOP_BOUNDING_BOX[2]+100, height=QWOP_BOUNDING_BOX[3]+100)
+    _browser.set_window_position(x=QWOP_BOUNDING_BOX[0]-50, y=QWOP_BOUNDING_BOX[1]-50)
 
     _browser.get(_QWOP_URL)
 
