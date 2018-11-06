@@ -5,8 +5,8 @@ import pytesseract
 
 # colors will be considered identical if the Euclidean distance between them is less than this epsilon
 _COLOR_EQUALITY_EPSILON = 5
-_GOLD_MEDAL_POSITION = (180, 235)  # position of the gold ribbon in the game-over screen
-_GOLD_MEDAL_COLOR = (255, 255, 0)  # color in the center of the gold ribbon in the game over screen
+_END_BOX_POSITION = (180, 265)  # position of some whitespace in the game-over screen
+_END_BOX_COLOR = (237, 237, 237)  # off-white color of the background of the game-over screen
 
 # box for the current distance measure at the top of the window
 _CURRENT_DISTANCE_BOX = (225, 125, 460, 160)  # left, upper, right, lower
@@ -63,7 +63,8 @@ class ImageProcessor(object):
 
         # determine if the game is over
         # check if the game over screen is up
-        self.game_over = _colors_equal(self.latest.getpixel(_GOLD_MEDAL_POSITION), _GOLD_MEDAL_COLOR)
+        self.game_over = _colors_equal(self.latest.getpixel(_END_BOX_POSITION), _END_BOX_COLOR)
+        print(self.game_over)
         # check if the game has "stagnated" (distance hasn't changed in the last buffer_size checks)
         if 0 < self.buffer_size <= len(self.historical_distances):
             self.game_over = all(dist == self.historical_distances[0] for dist in self.historical_distances) or self.game_over
