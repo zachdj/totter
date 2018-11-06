@@ -264,8 +264,8 @@ class GeneticAlgorithm(object):
         """
         phenotype = self.genome_to_phenotype(individual.genome)
         strategy = QwopStrategy(execution_function=phenotype)
-        distance, time = self.qwop_evaluator.evaluate(strategy)[0]
-        individual.fitness = self.compute_fitness(distance, time)
+        distance, run_time = self.qwop_evaluator.evaluate(strategy)[0]
+        individual.fitness = self.compute_fitness(distance, run_time)
         self.total_evaluations += 1
 
     @abstractmethod
@@ -292,12 +292,12 @@ class GeneticAlgorithm(object):
         pass
 
     @abstractmethod
-    def compute_fitness(self, distance_run, time):
+    def compute_fitness(self, distance_run, run_time):
         """ Computes an individual's fitness from the distance run and the time it took
 
         Args:
             distance_run (float): distance run in the QWOP simulator
-            time (float): time in seconds that it took to run to `distance`
+            run_time (float): time in seconds that it took to run to `distance`
 
         Returns:
             float: computed fitness

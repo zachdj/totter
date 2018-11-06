@@ -53,7 +53,7 @@ class ExampleGA(GeneticAlgorithm):
     
     In this case, fitness is simply the distance run
     """
-    def compute_fitness(self, distance_run, time):
+    def compute_fitness(self, distance_run, run_time):
         return distance_run
 
     """ Step 6: Parenthood selectioin 

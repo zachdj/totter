@@ -210,7 +210,7 @@ class QwopEvaluator(object):
         for index, strategy in enumerate(strategies):
             distance_run, time_taken = self.simulator.simulate(strategy, qwop_started=True)
 
-            fitness_values[index] = (distance_run, time)
+            fitness_values[index] = (distance_run, time_taken)
 
             # if the strategy didn't end the game, end it manually
             if not self.simulator.is_game_over():
