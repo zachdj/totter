@@ -11,6 +11,7 @@ from totter.evolution.QwopStrategy import QwopStrategy
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.algorithms.DoNothing import DoNothing
 from totter.evolution.algorithms.ExampleGA import ExampleGA
+from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
 
 
 def main():
