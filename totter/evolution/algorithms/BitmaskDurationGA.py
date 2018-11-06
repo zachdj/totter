@@ -54,8 +54,16 @@ class BitmaskDurationGA(GeneticAlgorithm):
         return phenotype
 
     def compute_fitness(self, distance_run, run_time):
-        """ Fitness: 2*distance - time"""
-        return 2*distance_run - run_time
+        """ Fitness: distance - time_over_75s
+
+        75 seconds is roughly the human record for completing QWOP.
+        We only penalize the strategy if it exceeds this time.
+
+        """
+        if run_time >= 75 or distance_run >= 100:
+            return distance_run - (run_time - 75)
+        else:
+            return distance_run
 
     def select_parents(self, population, n):
         """ Tournament selection with k=5 """
