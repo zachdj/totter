@@ -64,7 +64,6 @@ class ImageProcessor(object):
         # determine if the game is over
         # check if the game over screen is up
         self.game_over = _colors_equal(self.latest.getpixel(_END_BOX_POSITION), _END_BOX_COLOR)
-        print(self.game_over)
         # check if the game has "stagnated" (distance hasn't changed in the last buffer_size checks)
         if 0 < self.buffer_size <= len(self.historical_distances):
             self.game_over = all(dist == self.historical_distances[0] for dist in self.historical_distances) or self.game_over
