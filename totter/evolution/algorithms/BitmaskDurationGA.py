@@ -76,14 +76,23 @@ class BitmaskDurationGA(GeneticAlgorithm):
         return parents
 
     def crossover(self, parent1, parent2):
-        """ 2-point crossover """
-        # we have to choose a crossover point smaller than the length of the shortest parent
-        maximum_crossover_point = min(len(parent1), len(parent2)) - 1
-        crossover_point1 = random.choice(range(1, maximum_crossover_point - 1))
-        crossover_point2 = random.choice(range(crossover_point1+1, maximum_crossover_point))
-        child1 = parent1[:crossover_point1] + parent2[crossover_point1:crossover_point2] + parent1[crossover_point2:]
-        child2 = parent2[:crossover_point1] + parent1[crossover_point1:crossover_point2] + parent2[crossover_point2:]
-        return child1, child2
+        """ 50% 2-point crossover, 50% cut-and-splice """
+        if random.random() < 0.5:
+            # 2-point crossover
+            # we have to choose a crossover point smaller than the length of the shortest parent
+            maximum_crossover_point = min(len(parent1), len(parent2)) - 1
+            crossover_point1 = random.choice(range(1, maximum_crossover_point - 1))
+            crossover_point2 = random.choice(range(crossover_point1+1, maximum_crossover_point))
+            child1 = parent1[:crossover_point1] + parent2[crossover_point1:crossover_point2] + parent1[crossover_point2:]
+            child2 = parent2[:crossover_point1] + parent1[crossover_point1:crossover_point2] + parent2[crossover_point2:]
+            return child1, child2
+        else:
+            # cut-and-splice
+            cut_point1 = random.choice(range(1, len(parent1)-1))
+            cut_point2 = random.choice(range(1, len(parent2)-1))
+            child1 = parent1[:cut_point1] + parent2[cut_point2:]
+            child2 = parent2[:cut_point2] + parent1[cut_point1:]
+            return child1, child2
 
     def mutate(self, genome):
         """ Mutation - Either flip a bit in one of the bitstrings or apply a gaussian shift to the duration """
