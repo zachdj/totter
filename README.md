@@ -23,7 +23,7 @@ Linux systems require the `tesseract-ocr` package to be installed.
 `conda env create -f environment.win.yml`
 
 Install tesseract using one of the [UB Mannheim installers](https://github.com/UB-Mannheim/tesseract/wiki).
-
+Make sure the tesseract executable is on the system PATH.
 
 ### OS X
 
