@@ -188,6 +188,55 @@ class GeneticAlgorithm(object):
 
         return False
 
+    def seed(self, pool_size, time_limit=60):
+        """ Seeds the initial population with good randomly-created runners
+
+        This selects the best `self.pop_size` individuals from a pool of randomly generated individuals.
+        If the seeding procedure has already been run, then the individuals will instead be loaded from disk
+
+        Args:
+            pool_size (int): the size of the randomly generated pool from which the initial population will be drawn
+            time_limit (int): time limit (in seconds) for each evaluation in the pool
+
+        Returns: None
+
+        """
+        population_filepath = storage.get(os.path.join(self.__class__.__name__, 'population_seeds'))
+        population_file = os.path.join(population_filepath, f'seed_{self.pop_size}.tsd')
+
+        # if the population has not previously been seeded, then generate the seeded pop
+        if not os.path.exists(population_file):
+            # temporarily set time limit
+            self.qwop_evaluator.simulator.time_limit = time_limit
+            # generate pool of random individuals
+            pool = [Individual(self.generate_random_genome()) for i in range(0, pool_size)]
+            for indv in pool:
+                # custom evaluation
+                phenotype = self.genome_to_phenotype(indv.genome)
+                strategy = QwopStrategy(execution_function=phenotype)
+                distance, run_time = self.qwop_evaluator.evaluate(strategy)[0]
+                indv.fitness = distance
+
+            # sort by descending fitness
+            sorted_pool = sorted(pool, key=lambda individual: -individual.fitness)
+            # grab the fittest individuals
+            population = sorted_pool[:pool_size]
+            # save the seeded population
+            with open(population_file, 'wb') as data_file:
+                pickle.dump(population, data_file)
+
+            # reset GA state
+            self.qwop_evaluator.simulator.time_limit = self.eval_time_limit  # reset the time limit for the GA
+
+        # load population from saved file
+        with open(population_file, 'rb') as data_file:
+            seeded_pop = pickle.load(data_file)
+            self.population = seeded_pop
+            self.best_indv = self.population[0]
+            # reset fitness values - the fitness used by the GA may be different than the fitness used by the seeder
+            for indv in self.population:
+                indv.fitness = None
+
     def run(self):
         """ Runs the GA until the maximum number of iterations is achieved
 
@@ -199,7 +248,7 @@ class GeneticAlgorithm(object):
         for indv in self.population:
             if indv.fitness is None:
                 self._evaluate(indv)
-            if indv.fitness > self.best_indv.fitness:
+            if self.best_indv.fitness is None or indv.fitness > self.best_indv.fitness:
                 self.best_indv = indv
 
         # time the run
