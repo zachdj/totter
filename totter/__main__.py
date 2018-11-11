@@ -52,6 +52,13 @@ def main():
     evolve.add_argument('--load', action='store_true',
                         help='If set, the GA will load its starting state from the latest saved progress file')
 
+    # population seeding
+    seed = subcommands.add_parser('seed', argument_default=argparse.SUPPRESS,
+                                  description='Seed the population of the selected algorithm.')
+    seed.set_defaults(action='seed')
+    seed.add_argument('--pool_size', type=int, help='Size of the random pool from which seeds will be drawn.')
+    seed.add_argument('--pop_size', type=int, help='Number of individuals to be drawn out of the pool.')
+
     # simulation
     simulate = subcommands.add_parser('simulate', argument_default=argparse.SUPPRESS,
                                     description='Play the game with the best solution discovered by the GA.')
@@ -93,6 +100,15 @@ def main():
             algorithm.save_current_state()
         save_path = algorithm.save_results()
         logger.info(f'Results saved to {save_path}')
+
+    elif action == 'seed':
+        pool_size = args['pool_size'] if 'pool_size' in args else 500
+        pop_size = args['pop_size'] if 'pop_size' in args else 30
+        algorithm = algorithm_class(pop_size=pop_size)
+        logger.info(f'Seeding algorithm {algorithm_class.__name__} '
+                    f'using pool size {pool_size} and population size {pop_size}')
+        algorithm.seed(pool_size=500)
+        logger.info('Done.')
 
     elif action == 'simulate':
         if 'saved_result' in args:
