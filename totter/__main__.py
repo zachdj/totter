@@ -9,6 +9,7 @@ from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 from totter.evolution.Experiment import Experiment
 from totter.api.qwop import QwopStrategy
 import totter.utils.storage as storage
+from totter.evolution.CellularGA import CellularGA
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.algorithms.DoNothing import DoNothing
@@ -24,6 +25,8 @@ def main():
 
     genetic_algorithms = dict()
     for algorithm in GeneticAlgorithm.__subclasses__():
+        genetic_algorithms[algorithm.__name__] = algorithm
+    for algorithm in CellularGA.__subclasses__():
         genetic_algorithms[algorithm.__name__] = algorithm
 
     parser = argparse.ArgumentParser(
