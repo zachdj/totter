@@ -132,6 +132,7 @@ class GeneticAlgorithm(object):
                 child = Individual(genome=child_genome)
                 self._evaluate(child)
                 offspring[idx] = child
+                evalution_counter += 1
 
             # update population
             for child in offspring:
