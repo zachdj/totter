@@ -6,6 +6,7 @@ also elitist generational.
 
 """
 
+from abc import abstractmethod
 import math
 
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm, Individual
@@ -17,7 +18,7 @@ class CellularGA(GeneticAlgorithm):
                  evaluations=2000,
                  eval_time_limit=600,
                  pop_size=30,
-                 cx_prob=0.9,
+                 cx_prob=1,
                  mt_prob=0.05,
                  steady_state=True,
                  seed_population=False,
@@ -95,3 +96,106 @@ class CellularGA(GeneticAlgorithm):
             self.generations += 1
 
         return timer.since()
+
+    def select_parents(self, neighbors, n):
+        """ Cellular GAs use their own selection mechanism"""
+        pass
+
+    @abstractmethod
+    def generate_random_genome(self):
+        """ Generates a random genome
+
+        Returns:
+            object: randomly generated genome
+
+        """
+        pass
+
+    @abstractmethod
+    def genome_to_phenotype(self, genome):
+        """ Convert a genome to a function that plays QWOP
+
+        For example, if the genome is [W, Q, P], then the phenotype might be a function that presses 'W',
+        then presses 'Q', then presses 'P'.
+
+        Returns:
+            function: function that implements the strategy suggested by the genome
+
+        """
+        pass
+
+    @abstractmethod
+    def compute_fitness(self, distance_run, run_time):
+        """ Computes an individual's fitness from the distance run and the time it took
+
+        Args:
+            distance_run (float): distance run in the QWOP simulator
+            run_time (float): time in seconds that it took to run to `distance`
+
+        Returns:
+            float: computed fitness
+
+        """
+        pass
+
+    @abstractmethod
+    def crossover(self, parent1, parent2):
+        """ Crossover parent1 with parent2 and generate two offspring
+
+        Args:
+            parent1: the genome of the first parent
+            parent2: the genome of the second parent
+
+        Returns:
+            (object, object): (genome of child 1, genome of child 2)
+
+        """
+        pass
+
+    @abstractmethod
+    def mutate(self, genome):
+        """ Perform mutation on the provided genome
+
+        Args:
+            genome (object): genome to mutate
+
+        Returns:
+            object: mutated genome
+
+        """
+        pass
+
+    @abstractmethod
+    def repair(self, genome):
+        """ Repair a genome after crossover or mutation
+
+        Args:
+            genome (object): genome to repair
+
+        Returns:
+            object: genome with repaired contents
+
+        """
+        pass
+
+    @abstractmethod
+    def replace(self, population, candidate):
+        """ Select a member of the population which will be replaced by `candidate`
+
+        This method should return the index of the population member to replace.
+        It may also return None, which indicates that `candidate` should be discarded instead of replacing a member
+        of the population
+
+        Args:
+            population (list<Individual>:
+                list of Individuals in the population. Each individual has a genome and a fitness.
+
+            candidate (Individual): Individual which will replace the selected member
+
+        Returns:
+            int or None:
+                index of population member to be replaced by `candidate`,
+                or None if the replacement should not occur
+
+        """
+        pass
