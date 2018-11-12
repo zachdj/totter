@@ -25,8 +25,8 @@ class ExampleGA(GeneticAlgorithm):
     I assumed that each keystroke will be pressed for 20 milliseconds.
     """
     def generate_random_genome(self):
-        # initial length of the genome is chosen randomly from 50 to 200
-        genome_size = random.choice(range(50, 200))
+        # initial length of the genome is chosen randomly from 10, 30
+        genome_size = random.choice(range(10, 30))
         # choose a random sequence of keystrokes of length `genome_size`
         genome = random.choices(['q', 'w', 'o', 'p'], k=genome_size)
 
@@ -65,7 +65,7 @@ class ExampleGA(GeneticAlgorithm):
     def select_parents(self, population, n):
         parents = list()
         for i in range(0, n):
-            competitors = random.sample(population, 5)
+            competitors = random.sample(population.individuals, 5)
             winner = max(competitors, key=lambda individual: individual.fitness)
             parents.append(winner)
 
@@ -131,7 +131,7 @@ class ExampleGA(GeneticAlgorithm):
         replacement = random.choice(sorted_pop[0:5])
 
         # find the index of the chosen member
-        replacement_index = population.index(replacement)
+        replacement_index = population.individuals.index(replacement)
         return replacement_index
 
     """ Step 11: You're done!  
