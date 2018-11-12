@@ -6,6 +6,7 @@ import sys
 
 from totter.api.qwop import stop_qwop, QwopSimulator
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
+from totter.evolution.CellularGA import CellularGA
 from totter.evolution.QwopStrategy import QwopStrategy
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
@@ -22,6 +23,8 @@ def main():
 
     genetic_algorithms = dict()
     for algorithm in GeneticAlgorithm.__subclasses__():
+        genetic_algorithms[algorithm.__name__] = algorithm
+    for algorithm in CellularGA.__subclasses__():
         genetic_algorithms[algorithm.__name__] = algorithm
 
     parser = argparse.ArgumentParser(
