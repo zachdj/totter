@@ -11,6 +11,7 @@ from totter.evolution.QwopStrategy import QwopStrategy
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.algorithms.DoNothing import DoNothing
 from totter.evolution.algorithms.ExampleGA import ExampleGA
+from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
 
 
 def main():
@@ -46,10 +47,20 @@ def main():
     evolve.add_argument('--mt_prob', type=float, help='Probability of mutation, expressed as a decimal')
     evolve.add_argument('--generational', action='store_true',
                         help='If set, the GA will run in generational mode instead of steady-state mode')
+    evolve.add_argument('--seed_pop', action='store_true',
+                        help='If set, the GA seed the initial population using the best individuals from a pool of '
+                             'randomly-generated individuals.')
     evolve.add_argument('--save_progress', action='store_true',
                         help='If set, the GA will save its current state in a "progress" file after completion')
     evolve.add_argument('--load', action='store_true',
                         help='If set, the GA will load its starting state from the latest saved progress file')
+
+    # population seeding
+    seed = subcommands.add_parser('seed', argument_default=argparse.SUPPRESS,
+                                  description='Seed the population of the selected algorithm.')
+    seed.set_defaults(action='seed')
+    seed.add_argument('--pool_size', type=int, help='Size of the random pool from which seeds will be drawn.')
+    seed.add_argument('--pop_size', type=int, help='Number of individuals to be drawn out of the pool.')
 
     # simulation
     simulate = subcommands.add_parser('simulate', argument_default=argparse.SUPPRESS,
@@ -73,7 +84,8 @@ def main():
             'pop_size': args['pop_size'] if 'pop_size' in args else 20,
             'cx_prob': args['cx_prob'] if 'cx_prob' in args else 0.9,
             'mt_prob': args['mt_prob'] if 'mt_prob' in args else 0.05,
-            'steady_state': False if 'generational' in args else True
+            'steady_state': False if 'generational' in args else True,
+            'seed_population': 'seed_population' in args
         }
         logger.info(f'Running GA {algorithm_name} with config:\n{evolution_config}')
         algorithm = algorithm_class(**evolution_config)
@@ -92,6 +104,15 @@ def main():
             algorithm.save_current_state()
         save_path = algorithm.save_results()
         logger.info(f'Results saved to {save_path}')
+
+    elif action == 'seed':
+        pool_size = args['pool_size'] if 'pool_size' in args else 500
+        pop_size = args['pop_size'] if 'pop_size' in args else 30
+        algorithm = algorithm_class(pop_size=pop_size)
+        logger.info(f'Seeding algorithm {algorithm_class.__name__} '
+                    f'using pool size {pool_size} and population size {pop_size}')
+        algorithm.seed(pool_size=500)
+        logger.info('Done.')
 
     elif action == 'simulate':
         if 'saved_result' in args:
