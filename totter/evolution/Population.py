@@ -9,31 +9,28 @@ class Population(object):
 
         """
         self.size = len(individuals)
-        self.pop = individuals
-        self.best_indv = self.pop[0]
-        for indv in self.pop:
+        self.individuals = individuals
+        self.best_indv = self.individuals[0]
+        for indv in self.individuals:
             if self.best_indv.fitness is None and indv.fitness is not None:
                 self.best_indv = indv
             if indv.fitness is not None and indv.fitness > self.best_indv.fitness:
                 self.best_indv = indv
-
-    def get(self, idx):
-        if idx >= self.size:
-            raise IndexError
-
-        return self.pop[idx]
 
     def replace(self, idx, replacement):
         """ Replace the individual at `idx` with `replacement` """
         if idx >= self.size:
             raise IndexError
 
-        self.pop[idx] = replacement
+        self.individuals[idx] = replacement
         if replacement.fitness > self.best_indv.fitness:
             self.best_indv = replacement
 
     def __getitem__(self, idx):
-        return self.get(idx)
+        if idx >= self.size:
+            raise IndexError
+
+        return self.individuals[idx]
 
     def __len__(self):
         return self.size
