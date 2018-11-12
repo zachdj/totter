@@ -83,11 +83,15 @@ class GoogleGA(CellularGA):
             return 0
 
     def crossover(self, parent1, parent2):
-        """ Cut-and-splice crossover """
-        cut_point1 = random.choice(range(1, len(parent1) - 1))
-        cut_point2 = random.choice(range(1, len(parent2) - 1))
-        child1 = parent1[:cut_point1] + parent2[cut_point2:]
-        child2 = parent2[:cut_point2] + parent1[cut_point1:]
+        """ Two-point crossover """
+        max_crossover_index = min(len(parent1), len(parent2)) - 1
+
+        point1 = random.choice(range(1, max_crossover_index))
+        point2 = random.choice(range(point1, max_crossover_index+1))
+
+        child1 = parent1[:point1] + parent2[point1: point2] + parent1[point2:]
+        child2 = parent2[:point1] + parent1[point1: point2] + parent2[point2:]
+
         return child1, child2
 
     def mutate(self, genome):
