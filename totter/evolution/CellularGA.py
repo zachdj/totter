@@ -43,11 +43,12 @@ class CellularGA(GeneticAlgorithm):
     def run(self):
         # ensure population has been evaluated and best_indv is up-to-date
         # this is necesary after a GA is constructed or after loading a GA from disk
-        for indv in self.population:
-            if indv.fitness is None:
-                self._evaluate(indv)
-            if self.best_indv.fitness is None or indv.fitness > self.best_indv.fitness:
-                self.best_indv = indv
+        for column in self.population:
+            for indv in column:
+                if indv.fitness is None:
+                    self._evaluate(indv)
+                if self.best_indv.fitness is None or indv.fitness > self.best_indv.fitness:
+                    self.best_indv = indv
 
         # time the run
         timer = WallTimer()
