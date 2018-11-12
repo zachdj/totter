@@ -10,7 +10,6 @@ from datetime import timedelta
 from selenium import webdriver
 
 from totter.api.image_processing import ImageProcessor
-from totter.evolution.QwopStrategy import QwopStrategy
 from totter.utils.time import WallTimer
 
 # determine size of screen
