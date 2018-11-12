@@ -28,9 +28,10 @@ class GeneticAlgorithm(object):
                  cx_prob=0.9,
                  mt_prob=0.05,
                  steady_state=True,
-                 seed=1234):
+                 seed_population=False,
+                 random_seed=1234):
 
-        self.random_seed = seed
+        self.random_seed = random_seed
 
         self.eval_time_limit = eval_time_limit
         self.qwop_evaluator = QwopEvaluator(time_limit=self.eval_time_limit)
@@ -53,6 +54,9 @@ class GeneticAlgorithm(object):
         # create a random population
         self.population = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
         self.best_indv = self.population[0]
+
+        if seed_population:
+            self.seed(500)
 
     def plot(self, save=False):
         """ Plot the algorithm's history of best fitness and average fitness
@@ -225,8 +229,8 @@ class GeneticAlgorithm(object):
             with open(population_file, 'wb') as data_file:
                 pickle.dump(population, data_file)
 
-            # reset GA state
-            self.qwop_evaluator.simulator.time_limit = self.eval_time_limit  # reset the time limit for the GA
+            # reset time limit to its normal value
+            self.qwop_evaluator.simulator.time_limit = self.eval_time_limit
 
         # load population from saved file
         with open(population_file, 'rb') as data_file:
