@@ -1,3 +1,6 @@
+import statistics
+
+
 class Population(object):
     def __init__(self, individuals):
         """ Represents a set of totter.evolution.Individual objects.
@@ -25,6 +28,17 @@ class Population(object):
         self.individuals[idx] = replacement
         if replacement.fitness > self.best_indv.fitness:
             self.best_indv = replacement
+
+    def best_fitness(self):
+        return self.best_indv.fitness
+
+    def mean_fitness(self):
+        fitness_vals = list(map(lambda i: i.fitness, self.individuals))
+        return statistics.mean(fitness_vals)
+
+    def std_dev_fitness(self):
+        fitness_vals = list(map(lambda i: i.fitness, self.individuals))
+        return statistics.stdev(fitness_vals)
 
     def __getitem__(self, idx):
         if idx >= self.size:
