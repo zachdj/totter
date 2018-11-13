@@ -25,6 +25,7 @@ class GeneticAlgorithm(object):
                  population_seed=None):
 
         self.eval_time_limit = eval_time_limit
+        self.total_evaluations = 0
         self.qwop_evaluator = QwopEvaluator(time_limit=self.eval_time_limit)
 
         self.pop_size = pop_size
@@ -105,51 +106,48 @@ class GeneticAlgorithm(object):
 
         return Population(best_indvs)
 
-    def advance(self, evaluations):
-        """ Runs the GA until the indicated number of evaluations are achieved
+    def advance(self):
+        """ Advances the GA by one generation
 
-        Args:
-            evaluations (int): advance the GA until this number of evaluations has been reached
+        For generational GAs, a generation will replace the entire population.
+        For a steady-state GA, a generation will only replace two members of the population.
 
         Returns: None
 
         """
-        evalution_counter = 0
-        while evalution_counter < evaluations:
-            # select parents
-            if self.steady_state:
-                parents = self.select_parents(self.population, 2)
-            else:
-                parents = self.select_parents(self.population, self.pop_size)
+        # select parents
+        if self.steady_state:
+            parents = self.select_parents(self.population, 2)
+        else:
+            parents = self.select_parents(self.population, self.pop_size)
 
-            # make children using crossover
-            offspring = list()
-            for parent1, parent2 in zip(parents[::2], parents[1::2]):
-                if random.random() < self.cx_prob:
-                    child1_genome, child2_genome = self.crossover(parent1.genome, parent2.genome)
-                    offspring.append(child1_genome)
-                    offspring.append(child2_genome)
+        # make children using crossover
+        offspring = list()
+        for parent1, parent2 in zip(parents[::2], parents[1::2]):
+            if random.random() < self.cx_prob:
+                child1_genome, child2_genome = self.crossover(parent1.genome, parent2.genome)
+                offspring.append(child1_genome)
+                offspring.append(child2_genome)
 
-            # mutate then repair
-            for idx in range(0, len(offspring)):
-                child_genome = offspring[idx]
-                if random.random() < self.mt_prob:
-                    child_genome = self.mutate(child_genome)
+        # mutate then repair
+        for idx in range(0, len(offspring)):
+            child_genome = offspring[idx]
+            if random.random() < self.mt_prob:
+                child_genome = self.mutate(child_genome)
 
-                child_genome = self.repair(child_genome)
+            child_genome = self.repair(child_genome)
 
-                # even if the child wasn't mutated, his fitness needs to be re-evaluated
-                child = Individual(genome=child_genome)
-                self._evaluate(child)
-                offspring[idx] = child
-                evalution_counter += 1
+            # even if the child wasn't mutated, his fitness needs to be re-evaluated
+            child = Individual(genome=child_genome)
+            self._evaluate(child)
+            offspring[idx] = child
 
-            # update population
-            for child in offspring:
-                # do replacement
-                replacement_index = self.replace(self.population, child)
-                if replacement_index is not None:
-                    self.population.replace(replacement_index, child)
+        # update population
+        for child in offspring:
+            # do replacement
+            replacement_index = self.replace(self.population, child)
+            if replacement_index is not None:
+                self.population.replace(replacement_index, child)
 
     def _evaluate(self, individual):
         """ Evaluates an indvidual using the QwopEvaluator and updates the individual's fitness
@@ -164,6 +162,7 @@ class GeneticAlgorithm(object):
         strategy = QwopStrategy(execution_function=phenotype)
         distance, run_time = self.qwop_evaluator.evaluate(strategy)[0]
         individual.fitness = self.compute_fitness(distance, run_time)
+        self.total_evaluations += 1
 
     @abstractmethod
     def generate_random_genome(self):
