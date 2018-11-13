@@ -42,6 +42,16 @@ class GeneticAlgorithm(object):
         else:
             self.population = self.seed_population(population_seed, time_limit=60)
 
+    def get_configuration(self):
+        return {
+            'eval_time_limit': self.eval_time_limit,
+            'pop_size': self.pop_size,
+            'cx_prob': self.cx_prob,
+            'mt_prob': self.mt_prob,
+            'steady_state': self.steady_state,
+            'population_seed': self.population_seed
+        }
+
     def seed_population(self, pool_size, time_limit):
         """ Creates a Population using the best runners from a pool of randomly-generated runners
 
