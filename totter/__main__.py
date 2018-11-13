@@ -25,7 +25,8 @@ def main():
 
     genetic_algorithms = dict()
     for algorithm in GeneticAlgorithm.__subclasses__():
-        genetic_algorithms[algorithm.__name__] = algorithm
+        if len(algorithm.__subclasses__()) == 0:
+            genetic_algorithms[algorithm.__name__] = algorithm
     for algorithm in CellularGA.__subclasses__():
         genetic_algorithms[algorithm.__name__] = algorithm
 
