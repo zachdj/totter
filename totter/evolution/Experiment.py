@@ -20,9 +20,6 @@ class Experiment(object):
             max_evaluations (int): the maximum number of fitness evaluations to be performed during each run
             trials (int): number of trials to run
 
-        Returns:
-            str: directory where the results were saved
-
         """
         self.algorithm_class = algorithm_class
         self.algorithm_config = algorithm_config
@@ -97,6 +94,8 @@ class Experiment(object):
         plot(superhistory)
         figure_path = os.path.join(self.results_directory, 'fitness_vs_time.png')
         plt.savefig(figure_path)
+
+        return self.results_directory
 
     def _run_trial(self, number):
         history = list()
