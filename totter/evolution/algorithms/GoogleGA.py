@@ -106,16 +106,3 @@ class GoogleGA(CellularGA):
 
     def repair(self, genome):
         return genome
-
-    def replace(self, population, candidate):
-        """ Inverse tournament selection with k=3
-        Offspring survives only if its better than all three
-        """
-        competitors = random.sample(population, 3)
-        worst = min(competitors, key=lambda individual: individual.fitness)
-        if candidate.fitness > worst.fitness:
-            # find the index of the worst of the 3
-            replacement_index = population.index(worst)
-            return replacement_index
-        else:
-            return None
