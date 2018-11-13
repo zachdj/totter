@@ -66,10 +66,8 @@ def _close_qwop_window():
 def _end_game_manually():
     """ Performs a series of bad keystrokes that probably ends the game """
     pyautogui.keyDown('w')
-    pyautogui.keyDown('o')
     time.sleep(1)
     pyautogui.keyUp('w')
-    pyautogui.keyUp('o')
     pyautogui.keyDown('q')
     pyautogui.keyDown('p')
     time.sleep(3)
