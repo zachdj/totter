@@ -22,7 +22,7 @@ class GeneticAlgorithm(object):
                  cx_prob=0.9,
                  mt_prob=0.05,
                  steady_state=True,
-                 population_seed=None,
+                 population_seeding_pool=None,
                  seeding_time_limit=60):
 
         self.eval_time_limit = eval_time_limit
@@ -33,17 +33,17 @@ class GeneticAlgorithm(object):
         self.cx_prob = cx_prob
         self.mt_prob = mt_prob
         self.steady_state = steady_state
-        self.population_seed = population_seed
+        self.population_seeding_pool = population_seeding_pool
         self.seeding_time_limit = seeding_time_limit
 
-        if population_seed is None:
+        if population_seeding_pool is None:
             # create a random population
             individuals = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
             for indv in individuals:
                 self._evaluate(indv)
             self.population = Population(individuals)
         else:
-            self.population = self.seed_population(population_seed, time_limit=seeding_time_limit)
+            self.population = self.seed_population(population_seeding_pool, time_limit=seeding_time_limit)
 
     def get_configuration(self):
         return {
@@ -52,7 +52,7 @@ class GeneticAlgorithm(object):
             'cx_prob': self.cx_prob,
             'mt_prob': self.mt_prob,
             'steady_state': self.steady_state,
-            'population_seed': self.population_seed,
+            'population_seeding_pool': self.population_seeding_pool,
             'seeding_time_limit': self.seeding_time_limit
         }
 
