@@ -10,7 +10,6 @@ from datetime import timedelta
 from selenium import webdriver
 
 from totter.api.image_processing import ImageProcessor
-from totter.evolution.QwopStrategy import QwopStrategy
 from totter.utils.time import WallTimer
 
 # determine size of screen
@@ -67,10 +66,8 @@ def _close_qwop_window():
 def _end_game_manually():
     """ Performs a series of bad keystrokes that probably ends the game """
     pyautogui.keyDown('w')
-    pyautogui.keyDown('o')
     time.sleep(1)
     pyautogui.keyUp('w')
-    pyautogui.keyUp('o')
     pyautogui.keyDown('q')
     pyautogui.keyDown('p')
     time.sleep(3)
@@ -217,3 +214,29 @@ class QwopEvaluator(object):
                 _end_game_manually()
 
         return tuple(fitness_values)
+
+
+class QwopStrategy:
+    def __init__(self, execution_function):
+        """ Class representing QWOP strategies
+
+        A QWOP Strategy is a sequence of keystrokes that plays QWOP.
+        Each Strategy must implement an `execute` method, which executes the keystrokes for the strategy with the correct timing.
+        When evaluating the strategy, `execute` will automatically be looped until the game ends.
+
+        Args:
+            execution_function (function): function that implements the strategy
+
+        """
+        self.execute = execution_function
+
+    def cleanup(self):
+        """ Cleans up after strategy execution
+
+        This method will be called after the game has ended or the evaluation time limit has been reached
+
+        Returns: None
+        """
+        # ensure all keys are up
+        for key in ('q', 'w', 'o', 'p', 'space'):
+            pyautogui.keyUp(key)

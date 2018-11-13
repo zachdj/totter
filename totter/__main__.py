@@ -6,7 +6,9 @@ import sys
 
 from totter.api.qwop import stop_qwop, QwopSimulator
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
-from totter.evolution.QwopStrategy import QwopStrategy
+from totter.evolution.Experiment import Experiment
+from totter.api.qwop import QwopStrategy
+import totter.utils.storage as storage
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.algorithms.DoNothing import DoNothing
@@ -33,27 +35,27 @@ def main():
 
     subcommands = parser.add_subparsers()
 
-    # evolution
+    # evolution - runs an experiment
     evolve = subcommands.add_parser('evolve', argument_default=argparse.SUPPRESS,
                                     description='Evolve solutions using the selected GA.')
     evolve.set_defaults(action='evolve')
-    evolve.add_argument('--evaluations', type=int,
+    evolve.add_argument('--trials', type=int, default=1,
+                        help='Number of trials to run.  '
+                             'Each trial will run the GA for the specified number of evaluations.')
+    evolve.add_argument('--evaluations', type=int, default=1000,
                         help='Maximum number of fitness evaluations before the algorithm terminates')
-    evolve.add_argument('--eval_time_limit', type=int,
+    evolve.add_argument('--eval_time_limit', type=int, default=180,
                         help='Maximum time (in seconds) that an individual is allowed to run before the simulation is '
                              'killed.')
-    evolve.add_argument('--pop_size', type=int, help='Size of the population')
-    evolve.add_argument('--cx_prob', type=float, help='Probability of crossover, expressed as a decimal')
-    evolve.add_argument('--mt_prob', type=float, help='Probability of mutation, expressed as a decimal')
+    evolve.add_argument('--pop_size', type=int, default=30, help='Size of the population')
+    evolve.add_argument('--cx_prob', type=float, default=0.9, help='Probability of crossover, expressed as a decimal')
+    evolve.add_argument('--mt_prob', type=float, default=0.05, help='Probability of mutation, expressed as a decimal')
     evolve.add_argument('--generational', action='store_true',
                         help='If set, the GA will run in generational mode instead of steady-state mode')
-    evolve.add_argument('--seed_pop', action='store_true',
-                        help='If set, the GA seed the initial population using the best individuals from a pool of '
-                             'randomly-generated individuals.')
-    evolve.add_argument('--save_progress', action='store_true',
-                        help='If set, the GA will save its current state in a "progress" file after completion')
-    evolve.add_argument('--load', action='store_true',
-                        help='If set, the GA will load its starting state from the latest saved progress file')
+    evolve.add_argument('--population_seeding_pool', type=int, default=None,
+                        help='Size of pool used for seeding the initial population')
+    evolve.add_argument('--seeding_time_limit', type=int, default=60,
+                        help='The time limit used when constructing the seeded population')
 
     # population seeding
     seed = subcommands.add_parser('seed', argument_default=argparse.SUPPRESS,
@@ -64,9 +66,9 @@ def main():
 
     # simulation
     simulate = subcommands.add_parser('simulate', argument_default=argparse.SUPPRESS,
-                                    description='Play the game with the best solution discovered by the GA.')
+                                      description='Play the game with the best solution discovered by the GA.')
     simulate.set_defaults(action='simulate')
-    simulate.add_argument('--saved_result', type=str, help='Size of the population')
+    simulate.add_argument('--saved_result', type=str, help='Path to the results file that should be used')
 
     args = parser.parse_args()
     args = vars(args)
@@ -79,46 +81,38 @@ def main():
 
     if action == 'evolve':
         evolution_config = {
-            'evaluations': args['evaluations'] if 'evaluations' in args else 2000,
-            'eval_time_limit': args['eval_time_limit'] if 'eval_time_limit' in args else 600,
-            'pop_size': args['pop_size'] if 'pop_size' in args else 20,
-            'cx_prob': args['cx_prob'] if 'cx_prob' in args else 0.9,
-            'mt_prob': args['mt_prob'] if 'mt_prob' in args else 0.05,
+            'eval_time_limit': args['eval_time_limit'],
+            'pop_size': args['pop_size'],
+            'cx_prob': args['cx_prob'],
+            'mt_prob': args['mt_prob'],
             'steady_state': False if 'generational' in args else True,
-            'seed_population': 'seed_population' in args
+            'population_seeding_pool': args['population_seeding_pool'],
+            'seeding_time_limit': args['seeding_time_limit'],
         }
-        logger.info(f'Running GA {algorithm_name} with config:\n{evolution_config}')
-        algorithm = algorithm_class(**evolution_config)
+        evaluations = args['evaluations']
+        trials = args['trials']
+        logger.info(f'Running GA {algorithm_name} for {trials} trials with config:\n{evolution_config}')
 
-        # if the `load` flag was set, then load from the latest progress file
-        if 'load' in args:
-            algorithm.load()
-
-        # run the ga
-        time = algorithm.run()
-        stop_qwop()
+        # setup the experiment
+        experiment = Experiment(algorithm_class, evolution_config, evaluations, trials)
+        output_directory = experiment.run()
 
         # report results and save state
-        logger.info(f'Evolution completed after {time}.\n Best solution found: {algorithm.best_indv}')
-        if 'save_progress' in args:
-            algorithm.save_current_state()
-        save_path = algorithm.save_results()
-        logger.info(f'Results saved to {save_path}')
+        logger.info(f'Evolution completed.\n Results saved to: {output_directory}')
 
     elif action == 'seed':
         pool_size = args['pool_size'] if 'pool_size' in args else 500
         pop_size = args['pop_size'] if 'pop_size' in args else 30
-        algorithm = algorithm_class(pop_size=pop_size)
         logger.info(f'Seeding algorithm {algorithm_class.__name__} '
                     f'using pool size {pool_size} and population size {pop_size}')
-        algorithm.seed(pool_size=500)
+        algorithm = algorithm_class(pop_size=pop_size, population_seeding_pool=pool_size)
         logger.info('Done.')
 
     elif action == 'simulate':
         if 'saved_result' in args:
             filepath = args['saved_result']
         else:
-            filepath = algorithm_class.get_results_path()
+            filepath = storage.get(os.path.join(algorithm_class.__name__, 'solution.json'))
 
         if not os.path.exists(filepath):
             # if there is no results file, then we should quit
@@ -129,7 +123,7 @@ def main():
             with open(filepath, 'r') as results_file:
                 data = json.load(results_file)
 
-            best_genome = data['best_individual']
+            best_genome = data['best_genome']
             algorithm = algorithm_class(pop_size=1)  # we just need a shell to get the execute method
             strategy = QwopStrategy(execution_function=algorithm.genome_to_phenotype(best_genome))
             simulator = QwopSimulator(time_limit=600)  # TODO: time limit is rather arbitrary
