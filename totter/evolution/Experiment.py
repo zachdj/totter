@@ -78,9 +78,12 @@ class Experiment(object):
                 mbfs.append(history[i][1])
                 maf += history[i][2]
 
-            std_dev = statistics.stdev(mbfs)  # standard deviation in mbf
-            mbf = mbf / len(self.histories)  # mean best fitness
-            maf = maf / len(self.histories)  # mean average fitness
+            if self.trials > 1:
+                std_dev = statistics.stdev(mbfs)  # standard deviation in mbf
+            else:
+                std_dev = 0
+            mbf = mbf / self.trials  # mean best fitness
+            maf = maf / self.trials  # mean average fitness
 
             entry = (generation_counter, mbf, maf, std_dev)
             superhistory.append(entry)
