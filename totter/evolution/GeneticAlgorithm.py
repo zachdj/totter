@@ -94,7 +94,7 @@ class GeneticAlgorithm(object):
             # sort by descending distance run
             sorted_candidates = sorted(candidates, key=lambda c: -c[1])
             # grab the ones who ran farthest
-            best_indvs = sorted_candidates[:pool_size]
+            best_indvs = sorted_candidates[:self.pop_size]
             best_indvs = list(map(lambda c: c[0], best_indvs))
             # save the individuals found
             with open(population_file, 'wb') as data_file:
