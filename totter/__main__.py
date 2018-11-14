@@ -9,11 +9,14 @@ from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 from totter.evolution.Experiment import Experiment
 from totter.api.qwop import QwopStrategy
 import totter.utils.storage as storage
+from totter.evolution.CellularGA import CellularGA
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.algorithms.DoNothing import DoNothing
+from totter.evolution.algorithms.DoNothing import DoNothingCellular
 from totter.evolution.algorithms.ExampleGA import ExampleGA
 from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
+from totter.evolution.algorithms.GoogleGA import GoogleGA
 
 
 def main():
@@ -23,6 +26,9 @@ def main():
 
     genetic_algorithms = dict()
     for algorithm in GeneticAlgorithm.__subclasses__():
+        if len(algorithm.__subclasses__()) == 0:
+            genetic_algorithms[algorithm.__name__] = algorithm
+    for algorithm in CellularGA.__subclasses__():
         genetic_algorithms[algorithm.__name__] = algorithm
 
     parser = argparse.ArgumentParser(
