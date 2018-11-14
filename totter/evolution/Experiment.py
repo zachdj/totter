@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from matplotlib.lines import Line2D
 import numpy as np
 import os
 import random
@@ -78,9 +79,12 @@ class Experiment(object):
                 mbfs.append(history[i][1])
                 maf += history[i][2]
 
-            std_dev = statistics.stdev(mbfs)  # standard deviation in mbf
-            mbf = mbf / len(self.histories)  # mean best fitness
-            maf = maf / len(self.histories)  # mean average fitness
+            if self.trials > 1:
+                std_dev = statistics.stdev(mbfs)  # standard deviation in mbf
+            else:
+                std_dev = 0
+            mbf = mbf / self.trials  # mean best fitness
+            maf = maf / self.trials  # mean average fitness
 
             entry = (generation_counter, mbf, maf, std_dev)
             superhistory.append(entry)
@@ -142,7 +146,7 @@ class Experiment(object):
         return algorithm.population.best_indv
 
 
-def plot(history):
+def plot(history, plot_stdev=True):
     """ Generate a plot of fitness vs time given historical records
 
     Args:
@@ -159,17 +163,22 @@ def plot(history):
     average = history[:, 2]
     std_dev = history[:, 3]
 
-    fig, ax1 = plt.subplots()
+    fig, ax = plt.subplots()
     # label the axes
-    ax1.set_xlabel("Generation")
-    ax1.set_ylabel("Fitness")
+    ax.set_xlabel("Generation")
+    ax.set_ylabel("Fitness")
     # make `generations` axis show integer labels
     ax = fig.gca()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    line1 = ax1.plot(generations, best, "b-", label="Best Fitness")
-    line2 = ax1.plot(generations, average, "r-", label="Average fitness")
+    line1 = ax.plot(generations, best, "b-", label="Best Fitness")
+    line2 = ax.plot(generations, average, "r-", label="Average fitness")
+
+    # plot std deviation bars
+    if plot_stdev:
+        ax.vlines(generations, best - 0.5*std_dev, best + 0.5*std_dev)
 
     # construct legend
-    lns = line1 + line2
-    labs = [l.get_label() for l in lns]
-    ax1.legend(lns, labs, loc="center right")
+    custom_lines = [Line2D([0], [0], color='b'),
+                    Line2D([0], [0], color='r'),
+                    Line2D([0], [0], color='black')]
+    ax.legend(custom_lines, ['Best Fitness', 'Average Fitness', 'Standard Deviation'])

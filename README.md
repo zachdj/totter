@@ -27,7 +27,7 @@ Make sure the tesseract executable is on the system PATH.
 
 ### OS X
 
-`conda env create -f environment.osx.yml`
+`conda env create -f environment.mac.yml`
 
 OS X requires the `tesseract` package to be installed:
 `brew install tesseract`
