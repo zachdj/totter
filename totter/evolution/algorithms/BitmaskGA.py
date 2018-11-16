@@ -77,7 +77,11 @@ class BitmaskGA(GeneticAlgorithm):
 
         """
         speed = distance_run*60 / run_time  # meters per minute
-        return distance_run + speed
+        if distance_run > 10:
+            fitness = distance_run + speed
+        else:
+            fitness = distance_run
+        return fitness
 
     def select_parents(self, population, n):
         """ Tournament selection with k=5 """
