@@ -109,6 +109,3 @@ venv.bak/
 
 # JetBrains IDE files
 .idea
-
-# result files
-results
