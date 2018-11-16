@@ -93,17 +93,21 @@ class BitmaskGA(GeneticAlgorithm):
         """ 50% 2-point crossover, 50% cut-and-splice """
         if random.random() < 0.5:
             # 2-point crossover
-            # we have to choose a crossover point smaller than the length of the shortest parent
-            maximum_crossover_point = min(len(parent1), len(parent2)) - 1
-            crossover_point1 = random.choice(range(1, maximum_crossover_point - 1))
-            crossover_point2 = random.choice(range(crossover_point1+1, maximum_crossover_point))
-            child1 = parent1[:crossover_point1] + parent2[crossover_point1:crossover_point2] + parent1[crossover_point2:]
-            child2 = parent2[:crossover_point1] + parent1[crossover_point1:crossover_point2] + parent2[crossover_point2:]
-            return child1, child2
+            if len(parent1) < 3 or len(parent2) < 3:
+                print(f'Skipping crossover.  Cannot perform 2-point xover with {parent1} and {parent2}')
+                return parent1, parent2
+            else:
+                # we have to choose a crossover point smaller than the length of the shortest parent
+                maximum_crossover_point = min(len(parent1), len(parent2)) - 1
+                crossover_point1 = random.choice(range(0, maximum_crossover_point - 1))
+                crossover_point2 = random.choice(range(crossover_point1+1, maximum_crossover_point))
+                child1 = parent1[:crossover_point1] + parent2[crossover_point1:crossover_point2] + parent1[crossover_point2:]
+                child2 = parent2[:crossover_point1] + parent1[crossover_point1:crossover_point2] + parent2[crossover_point2:]
+                return child1, child2
         else:
             # cut-and-splice
-            cut_point1 = random.choice(range(1, len(parent1)-1))
-            cut_point2 = random.choice(range(1, len(parent2)-1))
+            cut_point1 = random.choice(range(0, len(parent1)-1))
+            cut_point2 = random.choice(range(0, len(parent2)-1))
             child1 = parent1[:cut_point1] + parent2[cut_point2:]
             child2 = parent2[:cut_point2] + parent1[cut_point1:]
             return child1, child2
