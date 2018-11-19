@@ -95,8 +95,13 @@ class GeneticAlgorithm(object):
 
             # sort by descending distance run
             sorted_candidates = sorted(candidates, key=lambda c: -c[1])
+            avg = sum(map(lambda c: c[1], candidates)) / pool_size
+            print(f'average fitness of pool: {avg}')
             # grab the ones who ran farthest
             best_indvs = sorted_candidates[:self.pop_size]
+            print(f'Best indvs: \n {best_indvs}')
+            avg = sum(map(lambda c: c[1], best_indvs)) / len(best_indvs)
+            print(f'average fitness of selected pop: {avg}')
             best_indvs = list(map(lambda c: c[0], best_indvs))
             # save the individuals found
             with open(population_file, 'wb') as data_file:
