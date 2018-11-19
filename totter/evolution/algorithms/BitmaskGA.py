@@ -149,6 +149,8 @@ class BitmaskGA(GeneticAlgorithm):
         return mutant
 
     def repair(self, genome):
+        if len(genome) <= 2:
+            return genome[:] + genome[:]  # duplicate the genome so it can be used in crossover once again
         return genome
 
     def replace(self, population, candidate):
