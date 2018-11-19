@@ -41,8 +41,8 @@ class BitmaskGA(GeneticAlgorithm):
         these characters.  Each character will be held for 150 milliseconds
 
         """
-        # initial length of the genome is chosen randomly from 20 to 40
-        genome_size = random.choice(range(20, 41))
+        # initial length of the genome is chosen randomly from 10 to 21
+        genome_size = random.choice(range(10, 21))
         # choose a random sequence of keystrokes of length `genome_size`
         genome = random.choices(list(CHARACTER_CODES.keys()), k=genome_size)
 
