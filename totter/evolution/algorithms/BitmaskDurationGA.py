@@ -51,7 +51,7 @@ class BitmaskDurationGA(GeneticAlgorithm):
 
         # for each position in the genome, choose a random bitmask and a random duration
         for i in range(genome_size):
-            bitmask = random.choice(CHARACTER_CODES.keys())
+            bitmask = random.choice(list(CHARACTER_CODES.keys()))
             duration = random.uniform(100, 500)
             genome.append([bitmask, duration])
 
@@ -89,7 +89,7 @@ class BitmaskDurationGA(GeneticAlgorithm):
         """ Tournament selection with k=5 """
         parents = list()
         for i in range(0, n):
-            competitors = random.sample(population, 5)
+            competitors = random.sample(population.individuals, 5)
             winner = max(competitors, key=lambda individual: individual.fitness)
             parents.append(winner)
 
@@ -120,7 +120,7 @@ class BitmaskDurationGA(GeneticAlgorithm):
         selected_gene = random.choice(range(len(mutant)))
         if random.random() < 0.5:
             # change to a different bitstring
-            mutant[selected_gene][0] = random.choice(CHARACTER_CODES.keys())
+            mutant[selected_gene][0] = random.choice(list(CHARACTER_CODES.keys()))
         else:
             # apply gaussian perturbation to duration
             mutant[selected_gene][1] += random.gauss(0, 25)
@@ -133,10 +133,10 @@ class BitmaskDurationGA(GeneticAlgorithm):
         """ Replacement - replace one of the five worst members of the population """
         # population is a list of `Individual` objects
         # sort in order of fitness
-        sorted_pop = sorted(population, key=lambda individual: individual.fitness)
+        sorted_pop = sorted(population.individuals, key=lambda individual: individual.fitness)
         # choose one of the five members with worst fitness
         replacement = random.choice(sorted_pop[0:5])
 
         # find the index of the chosen member
-        replacement_index = population.index(replacement)
+        replacement_index = population.individuals.index(replacement)
         return replacement_index
