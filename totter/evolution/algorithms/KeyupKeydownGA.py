@@ -7,7 +7,8 @@ from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 
 ALPHABET = list(('q', 'w', 'o', 'p', 'Q', 'W', 'O', 'P', '+'))
 
-class KeystrokeGA(GeneticAlgorithm):
+
+class KeyupKeydownGA(GeneticAlgorithm):
 
     def generate_random_genome(self):
         """ Representation: sequence of keys from the alphabet [q, w, o, p, Q, W, O, P, +]
