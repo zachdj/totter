@@ -1,1 +1,0 @@
-{"name": "BitmaskGA", "date": "2018-11-16_08:48", "trials": 1, "config": {"eval_time_limit": 180, "pop_size": 30, "cx_prob": 0.9, "mt_prob": 0.15, "steady_state": true, "population_seeding_pool": null, "seeding_time_limit": 60}}
