@@ -6,13 +6,13 @@ also elitist generational.
 
 """
 
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 import random
 
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm, Individual
 
 
-class CellularGA(GeneticAlgorithm):
+class CellularGA(GeneticAlgorithm, metaclass=ABCMeta):
     def __init__(self,
                  eval_time_limit=240,
                  pop_size=20,
