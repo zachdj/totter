@@ -17,6 +17,7 @@ from totter.evolution.algorithms.DoNothing import DoNothing
 from totter.evolution.algorithms.DoNothing import DoNothingCellular
 from totter.evolution.algorithms.ExampleGA import ExampleGA
 from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
+from totter.evolution.algorithms.KeystrokeGA import KeystrokeGA, CellularKeystrokeGA
 from totter.evolution.algorithms.BitmaskGA import BitmaskGA, CellularBitmaskGA
 from totter.evolution.algorithms.GoogleGA import GoogleGA
 
