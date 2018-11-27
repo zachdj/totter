@@ -24,9 +24,12 @@ from totter.evolution.algorithms.GoogleGA import GoogleGA
 
 
 def main():
-    logger = logging.getLogger('totter')
+    logger = logging.getLogger('totter')  # logger for the main process
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+    # exp_logger = logging.getLogger('totter.evolution.Experiment')  # logger for experiment runner
+    # exp_logger.setLevel(logging.INFO)
+    # exp_logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
     genetic_algorithms = dict()
     for algorithm in GeneticAlgorithm.__subclasses__():
@@ -101,7 +104,6 @@ def main():
         }
         evaluations = args['evaluations']
         trials = args['trials']
-        logger.info(f'Running GA {algorithm_name} for {trials} trials with config:\n{evolution_config}')
 
         # setup the experiment
         experiment = Experiment(algorithm_class, evolution_config, evaluations, trials)

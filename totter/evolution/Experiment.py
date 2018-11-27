@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import logging
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib.lines import Line2D
@@ -9,6 +10,10 @@ import random
 import statistics
 import totter.utils.storage as storage
 from totter.api.qwop import stop_qwop
+from totter.utils.time import WallTimer
+
+
+logger = logging.getLogger(__name__)
 
 
 class Experiment(object):
@@ -37,12 +42,19 @@ class Experiment(object):
             os.mkdir(self.trials_directory)
 
     def run(self):
+        logger.info(f'Running algorithm {self.algorithm_class.__name__} for {self.trials} trials using config:\n'
+                    f'{self.algorithm_config}\nMax fitness evaluations: {self.max_evaluations}')
+
+        timer = WallTimer()
         best_solution_found = None
         # run each trial
         for i in range(1, self.trials+1):
+            timer.restart()
+            logger.info(f'Running trial #{i}')
             random.seed(i)
             best_indv = self._run_trial(i)
             stop_qwop()
+            logger.info(f'Trial #{i} Completed after {timer.since()}')
 
             if best_solution_found is None or best_solution_found.fitness < best_indv.fitness:
                 best_solution_found = best_indv
@@ -99,6 +111,8 @@ class Experiment(object):
         figure_path = os.path.join(self.results_directory, 'fitness_vs_time.png')
         plt.savefig(figure_path)
 
+        logger.info(f'Experiment completed.  Results saved to f{self.results_directory}')
+
         return self.results_directory
 
     def _run_trial(self, number):
@@ -113,6 +127,7 @@ class Experiment(object):
         )
         history.append(first_entry)
 
+        logging_checkpoint = 0  # keeps track of last generation reported by the logger
         while algorithm.total_evaluations < self.max_evaluations:
             algorithm.advance()
             entry = (
@@ -122,6 +137,10 @@ class Experiment(object):
                 algorithm.population.std_dev_fitness()
             )
             history.append(entry)
+
+            if algorithm.total_evaluations - logging_checkpoint > 100:
+                logging_checkpoint = algorithm.total_evaluations
+                logger.info(f'{logging_checkpoint} evaluations completed...')
 
         self.histories.append(history)
 
