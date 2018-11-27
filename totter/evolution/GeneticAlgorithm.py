@@ -4,7 +4,7 @@ This GA will always seek to maximize fitness
 
 """
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import os
 import pickle
 import random
@@ -15,7 +15,7 @@ from totter.evolution.Population import Population
 import totter.utils.storage as storage
 
 
-class GeneticAlgorithm(object):
+class GeneticAlgorithm(ABC):
     def __init__(self,
                  eval_time_limit=240,
                  pop_size=20,
