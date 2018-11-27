@@ -1,4 +1,4 @@
-""" GAs that use the Bitmask + duration representation
+""" GAs that use the Bitmask representation
 
 """
 
@@ -278,3 +278,17 @@ class CellularBitmaskGA(CellularGA):
         if len(genome) <= 2:
             return genome[:] + genome[:]  # duplicate the genome so it can be used in crossover once again
         return genome
+
+
+class FitnessReplacementBitmaskGA(BitmaskGA):
+    """
+    Bitmask GA but with inverse fitness-proportionate selection
+    """
+    def replace(self, population, candidate):
+        # each individual's weight is the inverse of their fitness
+        inverse_fitness = list(map(lambda indv: 1/abs(indv.fitness), population.individuals))
+
+        selected_indv = random.choices(population.individuals, weights=inverse_fitness)
+
+        replacement_index = population.individuals.index(selected_indv[0])
+        return replacement_index
