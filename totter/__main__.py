@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import pathlib
 import sys
 
 from totter.api.qwop import stop_qwop, QwopSimulator
@@ -16,6 +17,7 @@ from totter.evolution.algorithms.DoNothing import DoNothing
 from totter.evolution.algorithms.DoNothing import DoNothingCellular
 from totter.evolution.algorithms.ExampleGA import ExampleGA
 from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
+from totter.evolution.algorithms.BitmaskGA import BitmaskGA, CellularBitmaskGA
 from totter.evolution.algorithms.GoogleGA import GoogleGA
 
 
@@ -118,7 +120,7 @@ def main():
         if 'saved_result' in args:
             filepath = args['saved_result']
         else:
-            filepath = storage.get(os.path.join(algorithm_class.__name__, 'solution.json'))
+            filepath = storage.get(algorithm_class.__name__) / 'solution.json'
 
         if not os.path.exists(filepath):
             # if there is no results file, then we should quit
@@ -130,7 +132,7 @@ def main():
                 data = json.load(results_file)
 
             best_genome = data['best_genome']
-            algorithm = algorithm_class(pop_size=1)  # we just need a shell to get the execute method
+            algorithm = algorithm_class(pop_size=0, skip_init=True)  # we just need a shell to get the execute method
             strategy = QwopStrategy(execution_function=algorithm.genome_to_phenotype(best_genome))
             simulator = QwopSimulator(time_limit=600)  # TODO: time limit is rather arbitrary
             simulator.simulate(strategy, qwop_started=True)

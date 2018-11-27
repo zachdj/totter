@@ -23,7 +23,8 @@ class GeneticAlgorithm(object):
                  mt_prob=0.05,
                  steady_state=True,
                  population_seeding_pool=None,
-                 seeding_time_limit=60):
+                 seeding_time_limit=60,
+                 skip_init=False):
 
         self.eval_time_limit = eval_time_limit
         self.total_evaluations = 0
@@ -36,14 +37,15 @@ class GeneticAlgorithm(object):
         self.population_seeding_pool = population_seeding_pool
         self.seeding_time_limit = seeding_time_limit
 
-        if population_seeding_pool is None:
-            # create a random population
-            individuals = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
-            for indv in individuals:
-                self._evaluate(indv)
-            self.population = Population(individuals)
-        else:
-            self.population = self.seed_population(population_seeding_pool, time_limit=seeding_time_limit)
+        if not skip_init:
+            if population_seeding_pool is None:
+                # create a random population
+                individuals = [Individual(self.generate_random_genome()) for i in range(0, self.pop_size)]
+                for indv in individuals:
+                    self._evaluate(indv)
+                self.population = Population(individuals)
+            else:
+                self.population = self.seed_population(population_seeding_pool, time_limit=seeding_time_limit)
 
     def get_configuration(self):
         return {
@@ -93,8 +95,13 @@ class GeneticAlgorithm(object):
 
             # sort by descending distance run
             sorted_candidates = sorted(candidates, key=lambda c: -c[1])
+            avg = sum(map(lambda c: c[1], candidates)) / pool_size
+            print(f'average fitness of pool: {avg}')
             # grab the ones who ran farthest
             best_indvs = sorted_candidates[:self.pop_size]
+            print(f'Best indvs: \n {best_indvs}')
+            avg = sum(map(lambda c: c[1], best_indvs)) / len(best_indvs)
+            print(f'average fitness of selected pop: {avg}')
             best_indvs = list(map(lambda c: c[0], best_indvs))
             # save the individuals found
             with open(population_file, 'wb') as data_file:
