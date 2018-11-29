@@ -138,6 +138,9 @@ class GeneticAlgorithm(ABC):
                 child1_genome, child2_genome = self.crossover(parent1.genome, parent2.genome)
                 offspring.append(child1_genome)
                 offspring.append(child2_genome)
+            else:
+                offspring.append(parent1.genome)
+                offspring.append(parent2.genome)
 
         # mutate then repair
         for idx in range(0, len(offspring)):
