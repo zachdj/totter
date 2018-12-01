@@ -8,6 +8,7 @@ import random
 import time
 
 from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
+from totter.evolution.algorithms.parameter_control.DynamicGA import DynamicMutationGA
 from totter.evolution.CellularGA import CellularGA
 
 CHARACTER_CODES = {
@@ -292,3 +293,7 @@ class FitnessReplacementBitmaskGA(BitmaskGA):
 
         replacement_index = population.individuals.index(selected_indv[0])
         return replacement_index
+
+
+class DynamicBitmaskGA(DynamicMutationGA, BitmaskGA):
+    pass
