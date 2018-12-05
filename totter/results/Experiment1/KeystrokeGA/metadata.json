@@ -1,1 +1,1 @@
-{"name": "KeystrokeGA", "date": "2018-11-29_07:38", "trials": 5, "config": {"eval_time_limit": 45, "pop_size": 25, "cx_prob": 0.9, "mt_prob": 0.15, "steady_state": true, "population_seeding_pool": 500, "seeding_time_limit": 25}}
+{"name": "KeystrokeGA", "date": "2018-12-04_03:07", "trials": 5, "config": {"eval_time_limit": 45, "pop_size": 25, "cx_prob": 0.9, "mt_prob": 0.15, "steady_state": true, "population_seeding_pool": 500, "seeding_time_limit": 25}}
