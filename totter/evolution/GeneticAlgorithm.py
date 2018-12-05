@@ -156,11 +156,14 @@ class GeneticAlgorithm(ABC):
             offspring[idx] = child
 
         # update population
-        for child in offspring:
-            # do replacement
-            replacement_index = self.replace(self.population, child)
-            if replacement_index is not None:
-                self.population.replace(replacement_index, child)
+        if self.steady_state:
+            # replace selected parents with children
+            for child in offspring:
+                replacement_index = self.replace(self.population, child)
+                if replacement_index is not None:
+                    self.population.replace(replacement_index, child)
+        else:
+            self.population = offspring
 
     def _evaluate(self, individual):
         """ Evaluates an indvidual using the QwopEvaluator and updates the individual's fitness
