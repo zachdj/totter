@@ -287,7 +287,10 @@ class FitnessReplacementBitmaskGA(BitmaskGA):
     """
     def replace(self, population, candidate):
         # each individual's weight is the inverse of their fitness
-        inverse_fitness = list(map(lambda indv: 1/abs(indv.fitness), population.individuals))
+        inverse_fitness = list(map(
+            lambda indv: 1/abs(indv.fitness) if indv.fitness != 0 else 0.25,  # avoid division by zero errors
+            population.individuals
+        ))
 
         selected_indv = random.choices(population.individuals, weights=inverse_fitness)
 
