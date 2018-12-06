@@ -18,7 +18,9 @@ from totter.evolution.algorithms.ExampleGA import ExampleGA
 from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
 from totter.evolution.algorithms.KeystrokeGA import KeystrokeGA, CellularKeystrokeGA
 from totter.evolution.algorithms.KeyupKeydownGA import KeyupKeydownGA
-from totter.evolution.algorithms.BitmaskGA import BitmaskGA, FitnessReplacementBitmaskGA, CellularBitmaskGA, DynamicBitmaskGA
+from totter.evolution.algorithms.BitmaskGA import BitmaskGA, FitnessReplacementBitmaskGA, CellularBitmaskGA
+from totter.evolution.algorithms.parameter_control.DynamicBitmaskGA \
+    import DynamicMutationGA, DynamicReplacementBitmaskGA, DynamicBitmaskGA
 from totter.evolution.algorithms.GoogleGA import GoogleGA
 
 
