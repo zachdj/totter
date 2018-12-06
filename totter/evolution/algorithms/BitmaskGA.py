@@ -296,7 +296,3 @@ class FitnessReplacementBitmaskGA(BitmaskGA):
 
         replacement_index = population.individuals.index(selected_indv[0])
         return replacement_index
-
-
-class DynamicBitmaskGA(DynamicMutationGA, BitmaskGA):
-    pass
