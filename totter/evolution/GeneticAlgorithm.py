@@ -163,7 +163,7 @@ class GeneticAlgorithm(ABC):
                 if replacement_index is not None:
                     self.population.replace(replacement_index, child)
         else:
-            self.population = offspring
+            self.population = Population(offspring)
 
     def _evaluate(self, individual):
         """ Evaluates an indvidual using the QwopEvaluator and updates the individual's fitness
