@@ -1,0 +1,1 @@
+{"name": "DynamicReplacementBitmaskGA", "date": "2018-12-08_19:26", "trials": 5, "config": {"eval_time_limit": 45, "pop_size": 25, "cx_prob": 0.9, "mt_prob": 0.15, "steady_state": true, "population_seeding_pool": 500, "seeding_time_limit": 25}}

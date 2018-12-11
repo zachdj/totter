@@ -1,1 +1,0 @@
-{"name": "GoogleGA", "date": "2018-11-16_19:27", "trials": 10, "config": {"eval_time_limit": 180, "pop_size": 30, "cx_prob": 0.9, "mt_prob": 0.05, "steady_state": true, "population_seeding_pool": 500, "seeding_time_limit": 60}}
