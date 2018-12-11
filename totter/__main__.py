@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import pathlib
 import sys
 
 from totter.api.qwop import stop_qwop, QwopSimulator
@@ -9,27 +10,49 @@ from totter.evolution.GeneticAlgorithm import GeneticAlgorithm
 from totter.evolution.Experiment import Experiment
 from totter.api.qwop import QwopStrategy
 import totter.utils.storage as storage
-from totter.evolution.CellularGA import CellularGA
 
 # ---------------  IMPORT YOUR CUSTOM GAs HERE ---------------
 from totter.evolution.algorithms.DoNothing import DoNothing
 from totter.evolution.algorithms.DoNothing import DoNothingCellular
 from totter.evolution.algorithms.ExampleGA import ExampleGA
 from totter.evolution.algorithms.BitmaskDurationGA import BitmaskDurationGA
+from totter.evolution.algorithms.KeystrokeGA import KeystrokeGA, CellularKeystrokeGA
+from totter.evolution.algorithms.KeyupKeydownGA import KeyupKeydownGA
+from totter.evolution.algorithms.BitmaskGA import BitmaskGA, FitnessReplacementBitmaskGA, CellularBitmaskGA
+from totter.evolution.algorithms.parameter_control.DynamicBitmaskGA \
+    import DynamicMutationGA, DynamicReplacementBitmaskGA, DynamicBitmaskGA
 from totter.evolution.algorithms.GoogleGA import GoogleGA
 
 
+def is_abstract(cls):
+    if not hasattr(cls, "__abstractmethods__"):
+        return False # an ordinary class
+    elif len(cls.__abstractmethods__) == 0:
+        return False # a concrete implementation of an abstract class
+    else:
+        return True # an abstract class
+
+
+# method to recursively discover GAs
+def get_algorithms():
+    genetic_algorithms = dict()
+    _get_algorithms(GeneticAlgorithm, genetic_algorithms)
+    return genetic_algorithms
+
+
+def _get_algorithms(base_class, algo_dict):
+    if not is_abstract(base_class):
+        algo_dict[base_class.__name__] = base_class
+    for child_class in base_class.__subclasses__():
+        _get_algorithms(child_class, algo_dict)
+
+
 def main():
-    logger = logging.getLogger('totter')
+    logger = logging.getLogger('totter')  # logger for the main process
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
-    genetic_algorithms = dict()
-    for algorithm in GeneticAlgorithm.__subclasses__():
-        if len(algorithm.__subclasses__()) == 0:
-            genetic_algorithms[algorithm.__name__] = algorithm
-    for algorithm in CellularGA.__subclasses__():
-        genetic_algorithms[algorithm.__name__] = algorithm
+    genetic_algorithms = get_algorithms()
 
     parser = argparse.ArgumentParser(
         description='Totter: Evolutionary Computing for QWOP',
@@ -97,7 +120,6 @@ def main():
         }
         evaluations = args['evaluations']
         trials = args['trials']
-        logger.info(f'Running GA {algorithm_name} for {trials} trials with config:\n{evolution_config}')
 
         # setup the experiment
         experiment = Experiment(algorithm_class, evolution_config, evaluations, trials)
@@ -118,7 +140,7 @@ def main():
         if 'saved_result' in args:
             filepath = args['saved_result']
         else:
-            filepath = storage.get(os.path.join(algorithm_class.__name__, 'solution.json'))
+            filepath = storage.get(algorithm_class.__name__) / 'solution.json'
 
         if not os.path.exists(filepath):
             # if there is no results file, then we should quit
@@ -130,7 +152,7 @@ def main():
                 data = json.load(results_file)
 
             best_genome = data['best_genome']
-            algorithm = algorithm_class(pop_size=1)  # we just need a shell to get the execute method
+            algorithm = algorithm_class(pop_size=0, skip_init=True)  # we just need a shell to get the execute method
             strategy = QwopStrategy(execution_function=algorithm.genome_to_phenotype(best_genome))
             simulator = QwopSimulator(time_limit=600)  # TODO: time limit is rather arbitrary
             simulator.simulate(strategy, qwop_started=True)
