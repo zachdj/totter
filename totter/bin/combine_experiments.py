@@ -13,6 +13,7 @@ PALETTE = [
     ['#FFD700', '#998100'],  # gold
     ['#B266B2', '#730073'],  # purple
     ['#4CA64C', '#006600'],  # green
+    ['#40E0D0', '#207068'],  # turquoise
     ['#8EABBC', '#47555E'],  # blue-grey
 ]
 
@@ -55,7 +56,7 @@ def combine_experiments(experiment_directory):
         std_dev = superhistory[:, 3]        # sigma in mbfs across all trials
 
         palette = PALETTE[index]
-        mbf, = ax.plot(generations, best, color=palette[0])
+        mbf, = ax.plot(generations, best, color=palette[0], linewidth=4)
         std_dev = ax.vlines(generations, best - 0.5*std_dev, best + 0.5*std_dev, colors=palette[1])
         experiment_lines.append(mbf)
 
@@ -69,4 +70,4 @@ def combine_experiments(experiment_directory):
 
 
 if __name__ == '__main__':
-    combine_experiments('/home/zach/Develop/totter/totter/results/Experiment1')
+    combine_experiments('/home/zach/Develop/totter/totter/results/Experiment5')

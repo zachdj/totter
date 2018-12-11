@@ -1,9 +1,15 @@
 import pathlib
 import json
 import statistics
+import os
 import matplotlib.pyplot as plt
 
 from totter.evolution.Experiment import plot as plot_history
+
+
+def get_immediate_subdirectories(a_dir):
+    return [name for name in os.listdir(a_dir)
+            if os.path.isdir(os.path.join(a_dir, name))]
 
 
 def combine_trials(experiment_directory, std_dev_skip=15):
@@ -57,7 +63,20 @@ def combine_trials(experiment_directory, std_dev_skip=15):
 
 
 if __name__ == '__main__':
-    combine_trials('../results/Experiment1/BitmaskGA')
-    # combine_trials('/home/zach/Develop/totter/totter/results/Experiment1/BitmaskDurationGA')
-    # combine_trials('/home/zach/Develop/totter/totter/results/Experiment1/KeystrokeGA')
-    # combine_trials('/home/zach/Develop/totter/totter/results/Experiment1/KeyupKeydownGA')
+    experiment_collections = [
+        # '../results/Experiment1',
+        # '../results/Experiment2',
+        # '../results/Experiment3',
+        # '../results/Experiment4',
+        '../results/Experiment5',
+    ]
+    for collection_dir in experiment_collections:
+        experiment_names = get_immediate_subdirectories(collection_dir)
+        collection_dir = pathlib.Path(collection_dir)
+        experiment_directories = [collection_dir / name for name in experiment_names]
+
+        for dir in experiment_directories:
+            skip = 15
+            if 'generational' in str(dir) or 'cellular' in str(dir):
+                skip = 0
+            combine_trials(dir, std_dev_skip=skip)
