@@ -36,7 +36,7 @@ OS X requires the `tesseract` package to be installed:
 
 `source activate totter`
 
-`python ...`
+`python -m totter --algorithm KeystrokeGA evolve --trials 5 --evaluations 1000 --eval_time_limit 45 --pop_size 25 --cx_prob 0.9 --mt_prob 0.15`
 
 # Contributors
 - Zach Jones (https://github.com/zachdj)
